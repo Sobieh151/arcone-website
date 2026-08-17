@@ -1,26 +1,153 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-bg: #000000;
+  --color-bg-secondary: #090909;
+  --color-card: #121212;
+  --color-surface: #171717;
+  --color-border: rgba(255, 255, 255, 0.06);
+
+  --color-orange: #e85002;
+  --color-orange-secondary: #c13001;
+  --color-orange-highlight: #ff6001;
+  --color-orange-burnt: #9c3f0b;
+
+  --color-white: #f9f9f9;
+  --color-gray-light: #a7a7a7;
+  /* #808080, not the brief's #646464: at small sizes (dates, index
+     numbers, footer copyright) #646464-on-black is ~3.35:1 contrast,
+     under WCAG AA's 4.5:1 for normal text. #808080 clears ~5.3:1. */
+  --color-gray-medium: #808080;
+  --color-gray-dark: #333333;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-bg: var(--color-bg);
+  --color-bg-secondary: var(--color-bg-secondary);
+  --color-card: var(--color-card);
+  --color-surface: var(--color-surface);
+  --color-border: var(--color-border);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-orange: var(--color-orange);
+  --color-orange-secondary: var(--color-orange-secondary);
+  --color-orange-highlight: var(--color-orange-highlight);
+  --color-orange-burnt: var(--color-orange-burnt);
+
+  --color-white: var(--color-white);
+  --color-gray-light: var(--color-gray-light);
+  --color-gray-medium: var(--color-gray-medium);
+  --color-gray-dark: var(--color-gray-dark);
+
+  --font-sans: var(--font-inter);
+
+  --animate-fade-up: fade-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-marquee: marquee 30s linear infinite;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(2rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
   }
 }
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-dark) transparent;
+}
+
+html {
+  background: var(--color-bg);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-white);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-orange);
+  color: #000000;
+}
+
+/* Lenis smooth scroll */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Ambient cinematic grain overlay */
+.grain {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Utility: mask text reveal */
+.text-reveal-mask {
+  overflow: hidden;
+  display: block;
+}
+
+/* Custom cursor hides native cursor on capable devices */
+@media (hover: hover) and (pointer: fine) {
+  body {
+    cursor: none;
+  }
+}
+
+/* Branded focus ring for keyboard navigation. The default browser outline
+   (usually blue) clashes against a fully custom dark UI — this keeps
+   focus clearly visible (a11y requirement) without looking out of place.
+   Mouse/touch users never see it: only :focus-visible qualifies. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-orange-highlight);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Respect the OS-level reduced-motion preference for anything not already
+   covered by Framer Motion's MotionConfig or a usePrefersReducedMotion
+   check (e.g. plain CSS transitions on hover states). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
