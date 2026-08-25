@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Reveal } from "@/components/animations/reveal";
 import { ContactForm } from "@/components/contact/contact-form";
-import { contactInfo, contactPage } from "@/content/contact";
+import { contactInfo } from "@/content/contact";
+import { startPage } from "@/content/start";
 
 export const metadata: Metadata = {
-  title: "Contact",
+  title: "Start a Project",
   description:
     "Start a project with ARCone. Tell us where the business is today, and where it needs to be.",
 };
@@ -14,16 +15,17 @@ export const metadata: Metadata = {
 const info = [
   { icon: Mail, label: contactInfo.email, href: `mailto:${contactInfo.email}` },
   { icon: Phone, label: contactInfo.phoneDisplay, href: `tel:${contactInfo.phone}` },
+  { icon: MessageCircle, label: "WhatsApp", href: contactInfo.whatsapp },
   { icon: MapPin, label: contactInfo.location, href: undefined },
 ];
 
-export default function ContactPage() {
+export default function StartPage() {
   return (
     <>
       <PageHeader
-        eyebrow={contactPage.eyebrow}
-        title={contactPage.title}
-        description={contactPage.description}
+        eyebrow={startPage.eyebrow}
+        title={startPage.title}
+        description={startPage.description}
       />
 
       <section className="mx-auto max-w-6xl px-6 pb-32 sm:px-10">
@@ -40,6 +42,8 @@ export default function ContactPage() {
                       {item.href ? (
                         <a
                           href={item.href}
+                          target={item.href.startsWith("http") ? "_blank" : undefined}
+                          rel={item.href.startsWith("http") ? "noreferrer" : undefined}
                           data-cursor-hover
                           className="inline-flex items-center gap-3 text-lg text-white transition-colors hover:text-orange-highlight"
                         >
@@ -61,9 +65,7 @@ export default function ContactPage() {
                 <span className="text-xs uppercase tracking-widest text-gray-medium">
                   Response Time
                 </span>
-                <p className="mt-4 max-w-xs text-gray-light">
-                  {contactPage.responseTime}
-                </p>
+                <p className="mt-4 max-w-xs text-gray-light">{startPage.responseTime}</p>
               </div>
 
               <div>
@@ -72,7 +74,7 @@ export default function ContactPage() {
                 </span>
                 <p className="mt-4 flex items-center gap-2 text-gray-light">
                   <span className="h-2 w-2 rounded-full bg-orange-highlight" />
-                  {contactPage.availability}
+                  {startPage.availability}
                 </p>
               </div>
             </div>

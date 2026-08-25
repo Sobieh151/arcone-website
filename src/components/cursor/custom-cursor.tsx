@@ -20,23 +20,31 @@ export function CustomCursor() {
     ).matches;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setEnabled(supportsFinePointer);
-    if (!supportsFinePointer) return;
+  }, []);
 
-    // Set a custom CSS cursor if a static image exists in `public/`.
-    // Prefer `/cursor.png` (user-provided); fall back to `/cursor.svg`.
-    const originalCursor = document.documentElement.style.cursor;
-    const tryCursor = (path: string) => {
-      try {
-        document.documentElement.style.cursor = `url('${path}') 32 32, auto`;
-      } catch (e) {
-        // ignore – some browsers may throw on invalid cursor values
-      }
-    };
-    // Try PNG first, then SVG placeholder.
-    tryCursor('/cursor.png');
-    // If PNG not present or unsupported, the browser will ignore it and
-    // we set a visible SVG fallback.
-    setTimeout(() => tryCursor('/cursor.svg'), 50);
+  useEffect(() => {
+    // `enabled` starts false, so the very first render (before this effect
+    // has even run once) returns null — no dot/ring in the DOM yet. This
+    // effect has to depend on `enabled` and bail out until it's true,
+    // otherwise it captures dotRef.current/ringRef.current as null on that
+    // first pass, exits via the guard below, and — since nothing here ever
+    // changes `enabled` itself — never runs again. That left the listeners
+    // and rAF loop permanently unattached: the dot and ring did mount once
+    // `enabled` flipped true, but frozen at their unstyled default position
+    // (fixed left:0 top:0, i.e. pinned in the corner) since nothing was
+    // ever there to move them.
+    if (!enabled) return;
+
+    // Note: globals.css already sets `body { cursor: none }` on capable
+    // devices, so the native OS cursor is hidden site-wide and this dot +
+    // ring pair *is* the cursor. (An earlier version of this effect also
+    // tried to layer a native `cursor: url(/cursor.png) …` image on top —
+    // that never had any visible effect, since body's own `cursor: none`
+    // always wins over an inherited value from a html-level inline style,
+    // and cursor.png's actual dimensions (1254×1254) are far past what
+    // browsers treat as a usable cursor image anyway. Removed rather than
+    // fixed: a second, static cursor stacked on this animated one would
+    // just be visual noise.)
 
     const dot = dotRef.current;
     const ring = ringRef.current;
@@ -46,6 +54,11 @@ export function CustomCursor() {
     let ringY = window.innerHeight / 2;
     let mouseX = ringX;
     let mouseY = ringY;
+    // Paint both elements at their starting position immediately so they're
+    // visible right away, instead of sitting pinned at the dot's default
+    // (0,0) markup position until the first real mousemove event fires.
+    dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
+    ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
 
     const onMove = (e: MouseEvent) => {
       mouseX = e.clientX;
@@ -79,16 +92,12 @@ export function CustomCursor() {
     window.addEventListener("mouseout", onOut);
 
     return () => {
-      // restore previous cursor
-      try {
-        document.documentElement.style.cursor = originalCursor || '';
-      } catch {}
       cancelAnimationFrame(raf);
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseover", onOver);
       window.removeEventListener("mouseout", onOut);
     };
-  }, [reducedMotion]);
+  }, [enabled, reducedMotion]);
 
   if (!enabled) return null;
 

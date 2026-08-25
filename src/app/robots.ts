@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/content/seo";
 
-// Ensure this route is treated as static for `output: 'export'` builds.
+// Cheap to precompute and doesn't need per-request freshness.
 export const dynamic = "force-static";
 
 export default function robots(): MetadataRoute.Robots {

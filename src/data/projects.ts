@@ -10,6 +10,7 @@ export type Project = {
   slug: string;
   name: string;
   category: string;
+  industry: string;
   year: string;
   summary: string;
   services: string[];
@@ -24,7 +25,8 @@ export const projects: Project[] = [
   {
     slug: "north-atlas",
     name: "North Atlas",
-    category: "Brand & Web",
+    category: "Branding",
+    industry: "Private Equity",
     year: "2025",
     summary: "Repositioning a private equity firm as the category's most trusted name.",
     services: ["Brand Identity", "Website", "Art Direction"],
@@ -44,7 +46,8 @@ export const projects: Project[] = [
   {
     slug: "fielder",
     name: "Fielder",
-    category: "Product & Growth",
+    category: "Web & App",
+    industry: "Logistics",
     year: "2025",
     summary: "Turning a logistics startup's product into its best sales asset.",
     services: ["Product Design", "Marketing Site", "Content Strategy"],
@@ -64,7 +67,8 @@ export const projects: Project[] = [
   {
     slug: "marrow",
     name: "Marrow",
-    category: "Brand & Campaign",
+    category: "Media & Activations",
+    industry: "Nutrition & Wellness",
     year: "2024",
     summary: "Launching a nutrition brand into a category built on noise.",
     services: ["Brand Identity", "Packaging", "Launch Campaign"],
@@ -84,7 +88,8 @@ export const projects: Project[] = [
   {
     slug: "harbor-co",
     name: "Harbor & Co.",
-    category: "Web & SEO",
+    category: "Digital Marketing",
+    industry: "Professional Services",
     year: "2024",
     summary: "Rebuilding a 40-year-old firm's digital presence without losing its credibility.",
     services: ["Website", "SEO Architecture", "Content"],

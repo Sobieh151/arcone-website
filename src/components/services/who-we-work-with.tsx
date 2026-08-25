@@ -11,7 +11,7 @@ export function WhoWeWorkWith() {
           <div>
             <Reveal>
               <span className="text-xs uppercase tracking-widest text-orange-highlight">
-                Who We Work With
+                [[ Who we work with — eyebrow ]]
               </span>
             </Reveal>
             <StaggerGroup className="mt-8 flex flex-wrap gap-3" staggerChildren={0.04}>
@@ -27,7 +27,7 @@ export function WhoWeWorkWith() {
           <div>
             <Reveal>
               <span className="text-xs uppercase tracking-widest text-orange-highlight">
-                Industries
+                [[ Industries — eyebrow ]]
               </span>
             </Reveal>
             <StaggerGroup className="mt-8 flex flex-wrap gap-3" staggerChildren={0.04}>

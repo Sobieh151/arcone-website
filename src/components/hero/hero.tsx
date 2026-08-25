@@ -12,6 +12,7 @@ import { hero } from "@/content/home";
 import { heroLineVariants, heroFadeIn } from "@/animations/hero";
 import { heroParallax } from "@/animations/scroll-parallax";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
+import { useTilt } from "@/lib/use-tilt";
 
 const GradientScene = dynamic(
   () => import("@/components/backgrounds/gradient-scene").then((m) => m.GradientScene),
@@ -22,6 +23,16 @@ export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
   const reducedMotion = usePrefersReducedMotion();
+  // tilt: false — the badge is a small pill, not a tile; only the
+  // cursor-tracking shine (glass-shine) runs, no 3D rotation. Destructured
+  // (not kept as a `badge.ref` object) — eslint's react-hooks/refs rule
+  // flags property access into an object carrying a ref.
+  const {
+    ref: badgeRef,
+    onMouseMove: onBadgeMouseMove,
+    onMouseLeave: onBadgeMouseLeave,
+    style: badgeStyle,
+  } = useTilt<HTMLSpanElement>({ tilt: false });
 
   // Scroll-linked (not viewport-entry) motion: as the hero scrolls past,
   // its background drifts, scales up and dims — a depth cue rather than
@@ -49,6 +60,12 @@ export function Hero() {
     return () => ctx.revert();
   }, [reducedMotion]);
 
+  // No separate cursor-reactive spotlight here — GradientScene's shader
+  // already tracks the pointer itself (see its `uMouse` uniform) and
+  // blooms a highlight toward it; a second CSS layer doing the same thing
+  // on top would just be a redundant, less-smooth copy of an effect the
+  // banner already has.
+
   return (
     // `isolate` (not `bg-bg`) makes this section its own stacking-context
     // root: without it, `-z-10` children go looking for the nearest
@@ -66,10 +83,14 @@ export function Hero() {
 
       <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-6 text-center">
         <motion.span
+          ref={badgeRef}
+          onMouseMove={onBadgeMouseMove}
+          onMouseLeave={onBadgeMouseLeave}
+          style={badgeStyle}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.4, duration: 0.8 }}
-          className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-white/5 px-4 py-1.5 text-xs uppercase tracking-widest text-gray-light backdrop-blur-sm"
+          className="glass glass-shine relative mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs uppercase tracking-widest text-gray-light"
         >
           {hero.eyebrow}
         </motion.span>
@@ -126,7 +147,7 @@ export function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.8, duration: 1 }}
-        className="absolute bottom-10 flex flex-col items-center gap-2 text-gray-medium"
+        className="glass absolute bottom-10 flex flex-col items-center gap-2 rounded-full px-5 py-3 text-gray-medium"
       >
         <span className="text-[11px] uppercase tracking-widest">Scroll</span>
         <motion.div

@@ -7,16 +7,16 @@ import { ContactCta } from "@/components/sections/contact-cta";
 export const metadata: Metadata = {
   title: "Services",
   description:
-    "Brand strategy & identity, website & product design, and social & performance creative — what ARCone does, for who, and why.",
+    "Digital marketing, media production, branding, web & app, and media & activations — ARCone's five capabilities.",
 };
 
 export default function ServicesPage() {
   return (
     <>
       <PageHeader
-        eyebrow="What We Do"
-        title="Three disciplines. One outcome."
-        description="Every service exists to answer the same question: does this make the business impossible to ignore."
+        eyebrow="[[ Services eyebrow ]]"
+        title="[[ Services — headline ]]"
+        description="[[ Services — one to two sentence description ]]"
       />
       <ServicesList />
       <WhoWeWorkWith />

@@ -9,7 +9,7 @@ export function Values() {
       <div className="mx-auto max-w-7xl px-6 sm:px-10">
         <Reveal>
           <span className="text-xs uppercase tracking-widest text-orange-highlight">
-            What We Value
+            [[ Values — eyebrow ]]
           </span>
         </Reveal>
         <StaggerGroup className="mt-10 flex flex-wrap gap-4" staggerChildren={0.04}>

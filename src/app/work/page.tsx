@@ -6,16 +6,16 @@ import { ContactCta } from "@/components/sections/contact-cta";
 export const metadata: Metadata = {
   title: "Work",
   description:
-    "Selected brand, web and campaign work for ambitious companies. Explore ARCone's case studies.",
+    "Case studies across digital marketing, media production, branding, web & app, and media & activations.",
 };
 
 export default function WorkPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Selected Work"
-        title="Work built to move numbers, not just moods."
-        description="A selection of brand, product and campaign work for companies that treat design as leverage."
+        eyebrow="[[ Work eyebrow ]]"
+        title="[[ Work — headline ]]"
+        description="[[ Work — one to two sentence description ]]"
       />
       <WorkList />
       <ContactCta />

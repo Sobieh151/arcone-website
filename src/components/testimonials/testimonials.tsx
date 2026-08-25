@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import { Reveal } from "@/components/animations/reveal";
+import { GlassCard } from "@/components/animations/glass-card";
 import { testimonials as quotes } from "@/content/home";
 
 export function Testimonials() {
@@ -20,7 +21,10 @@ export function Testimonials() {
           <Quote className="mx-auto text-orange" size={32} strokeWidth={1.5} />
         </Reveal>
 
-        <div className="mt-10 min-h-[220px] sm:min-h-[160px]">
+        <GlassCard
+          tilt={false}
+          className="mt-10 flex min-h-[220px] items-center justify-center rounded-3xl px-6 py-10 sm:min-h-[200px] sm:px-14 sm:py-12"
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={index}
@@ -38,7 +42,7 @@ export function Testimonials() {
               </p>
             </motion.div>
           </AnimatePresence>
-        </div>
+        </GlassCard>
 
         <div className="mt-10 flex items-center justify-center gap-4">
           <button

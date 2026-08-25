@@ -3,9 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Don't advertise the framework in response headers.
   poweredByHeader: false,
-  // Export a fully static site (replaces deprecated `next export`).
-  // See: https://nextjs.org/docs/app/building-your-application/deploying/static-exports
-  output: "export",
+  // No `output: "export"`: /work/[slug]-style dynamic routes (and /start's
+  // Formspree-backed form) run fine under static export too, but the site
+  // now targets a real Next.js server instead of a static host.
 
   images: {
     // No remote images yet — once real photography/CMS-hosted assets

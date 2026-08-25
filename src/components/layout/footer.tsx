@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { footerNav, socialLinks } from "@/content/navigation";
+import { footerNav } from "@/content/navigation";
 import { contactInfo } from "@/content/contact";
-import { footerStatement } from "@/content/footer";
 import { siteConfig } from "@/content/seo";
 
 export function Footer() {
@@ -17,18 +16,13 @@ export function Footer() {
       />
       <div className="mx-auto max-w-7xl px-6 py-16 sm:px-10">
         <div className="flex flex-col justify-between gap-12 md:flex-row">
-          <div className="max-w-sm">
-            <Link
-              href="/"
-              data-cursor-hover
-              className="text-2xl font-semibold tracking-tight text-white"
-            >
-              ARC<span className="text-orange-highlight">one</span>
-            </Link>
-            <p className="mt-4 text-sm leading-relaxed text-gray-light">
-              {footerStatement}
-            </p>
-          </div>
+          <Link
+            href="/"
+            data-cursor-hover
+            className="text-2xl font-semibold tracking-tight text-white"
+          >
+            ARC<span className="text-orange-highlight">one</span>
+          </Link>
 
           <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
             <div>
@@ -54,47 +48,46 @@ export function Footer() {
                 Connect
               </p>
               <ul className="mt-4 space-y-3">
-                {socialLinks.map((item) => (
-                  <li key={item.href}>
-                    <a
-                      href={item.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      data-cursor-hover
-                      className="inline-flex items-center gap-1 text-sm text-gray-light transition-colors hover:text-white"
-                    >
-                      {item.label}
-                      <ArrowUpRight size={12} />
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-widest text-gray-medium">
-                Studio
-              </p>
-              <ul className="mt-4 space-y-3 text-sm text-gray-light">
+                <li>
+                  <a
+                    href={contactInfo.whatsapp}
+                    target="_blank"
+                    rel="noreferrer"
+                    data-cursor-hover
+                    className="inline-flex items-center gap-1 text-sm text-gray-light transition-colors hover:text-white"
+                  >
+                    WhatsApp
+                    <ArrowUpRight size={12} />
+                  </a>
+                </li>
                 <li>
                   <a
                     href={`mailto:${contactInfo.email}`}
                     data-cursor-hover
-                    className="transition-colors hover:text-white"
+                    className="text-sm text-gray-light transition-colors hover:text-white"
                   >
                     {contactInfo.email}
                   </a>
                 </li>
                 <li>
                   <a
-                    href={`tel:${contactInfo.phone}`}
+                    href={contactInfo.instagram}
+                    target="_blank"
+                    rel="noreferrer"
                     data-cursor-hover
-                    className="transition-colors hover:text-white"
+                    className="inline-flex items-center gap-1 text-sm text-gray-light transition-colors hover:text-white"
                   >
-                    {contactInfo.phoneDisplay}
+                    Instagram
+                    <ArrowUpRight size={12} />
                   </a>
                 </li>
-                <li>{contactInfo.location}</li>
               </ul>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-widest text-gray-medium">
+                Studio
+              </p>
+              <p className="mt-4 text-sm text-gray-light">{contactInfo.location}</p>
             </div>
           </div>
         </div>

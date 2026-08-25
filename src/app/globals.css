@@ -19,6 +19,22 @@
      under WCAG AA's 4.5:1 for normal text. #808080 clears ~5.3:1. */
   --color-gray-medium: #808080;
   --color-gray-dark: #333333;
+
+  /* The site's one signature easing curve (already used throughout
+     hero.ts/reveal.ts/navbar.ts's Framer/GSAP transitions) — exposed here
+     so CSS-driven hovers can share it instead of drifting to whatever a
+     given utility's default happens to be. */
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Tailwind's `transition-*` utilities (transition-colors, transition-all,
+     …) fall back to these two tokens whenever a call site doesn't specify
+     its own `duration-*`/`ease-*`. Overriding them here — rather than
+     hand-editing every hover className — is what actually makes "smoother"
+     apply site-wide: every existing hover/focus transition (nav links,
+     card borders, button colors) picks up the slower, expo-out feel for
+     free, in the same curve the JS-driven animations already use. */
+  --default-transition-duration: 350ms;
+  --default-transition-timing-function: var(--ease-smooth);
 }
 
 @theme inline {
@@ -115,6 +131,110 @@ html.lenis body {
 .text-reveal-mask {
   overflow: hidden;
   display: block;
+}
+
+/* ------------------------------------------------------------------ */
+/* Glassmorphism: frosted-glass banners + cards, with a cursor-tracking
+   shine driven by useTilt (src/lib/use-tilt.ts).
+   - `.glass` is the always-on surface (hero badge, stat/testimonial/
+     service tiles): translucent from the first frame.
+   - `.glass-on-hover` is the same look but transparent at rest, for wide
+     list rows (work preview) where a permanent panel would compete with
+     the page's hairline-border rhythm — it only turns to glass on
+     hover/focus.
+   - `.glass-shine` layers the pointer-tracking highlight on top of either
+     one; combine it with whichever surface class is in use. */
+
+/* No `position` declared here on purpose: Tailwind's own utilities
+   (`@layer utilities`) sit in a lower-priority cascade layer than this
+   plain, unlayered CSS, so an unconditional `position: relative` here
+   would silently beat a call site's `absolute`/`fixed` regardless of
+   source order (that exact bug shipped once — the hero's scroll-cue pill
+   went from `absolute` to `relative` and drifted into the CTA row).
+   Every call site brings its own position utility instead (`relative` on
+   the plain divs/links, `absolute` on the hero scroll cue). */
+.glass {
+  background:
+    linear-gradient(
+      155deg,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.02) 45%,
+      rgba(255, 255, 255, 0.04)
+    ),
+    rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 30px rgba(0, 0, 0, 0.35);
+  transition:
+    border-color 0.5s var(--ease-smooth),
+    box-shadow 0.5s var(--ease-smooth);
+}
+
+.glass:hover,
+.glass:focus-within {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 14px 40px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(232, 80, 2, 0.14);
+}
+
+.glass-on-hover {
+  background: transparent;
+  border: 1px solid transparent;
+  transition:
+    background 0.6s var(--ease-smooth),
+    border-color 0.6s var(--ease-smooth),
+    box-shadow 0.6s var(--ease-smooth);
+}
+
+.glass-on-hover:hover,
+.glass-on-hover:focus-within {
+  background:
+    linear-gradient(
+      155deg,
+      rgba(255, 255, 255, 0.08),
+      rgba(255, 255, 255, 0.015) 45%,
+      rgba(255, 255, 255, 0.03)
+    ),
+    rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Cursor-tracking highlight, positioned via --mx/--my (written directly to
+   the node by useTilt on mousemove). Inert until hovered/focused, and the
+   surrounding surface class's own `overflow: hidden` clips it to whatever
+   border-radius the host element already has — no extra radius bookkeeping
+   needed here. */
+.glass-shine {
+  overflow: hidden;
+}
+
+.glass-shine::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  background: radial-gradient(
+    circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.16),
+    transparent 45%
+  );
+  pointer-events: none;
+}
+
+.glass-shine:hover::before,
+.glass-shine:focus-within::before {
+  opacity: 1;
 }
 
 /* Custom cursor hides native cursor on capable devices */

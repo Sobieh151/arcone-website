@@ -8,41 +8,39 @@ import { Button } from "@/components/buttons/button";
 
 type Status = "idle" | "submitting" | "sent" | "fallback" | "error";
 
+// Formspree receives the POST directly from the browser — no Next.js API
+// route needed. The site now runs on a Next.js server (not a static
+// export), so a server route would work too, but Formspree is already
+// wired up and working, so it stays. Sign up at https://formspree.io,
+// create a form, and put its ID in NEXT_PUBLIC_FORMSPREE_FORM_ID (see
+// .env.example) — this has no working default, so until it's set the
+// form fails gracefully to a mailto: link instead of losing the message
+// silently.
+const formspreeId = process.env.NEXT_PUBLIC_FORMSPREE_FORM_ID;
+
 export function ContactForm() {
   const [status, setStatus] = useState<Status>("idle");
-  
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!formspreeId) {
+      setStatus("fallback");
+      return;
+    }
+
     setStatus("submitting");
 
     const form = new FormData(e.currentTarget);
-    const payload = {
-      name: String(form.get("name") || ""),
-      email: String(form.get("email") || ""),
-      company: String(form.get("company") || ""),
-      message: String(form.get("message") || ""),
-    };
 
     try {
-      const res = await fetch("/api/contact", {
+      const res = await fetch(`https://formspree.io/f/${formspreeId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        headers: { Accept: "application/json" },
+        body: form,
       });
-      const data = (await res.json().catch(() => null)) as
-        | { ok: boolean; error?: string }
-        | null;
 
-      if (data?.ok) {
-        setStatus("sent");
-      } else if (data?.error === "not_configured") {
-        // Email delivery isn't wired up yet (see .env.example). Don't
-        // pretend the message went somewhere — offer a working fallback.
-        setStatus("fallback");
-      } else {
-        setStatus("error");
-      }
+      setStatus(res.ok ? "sent" : "error");
     } catch {
       setStatus("error");
     }

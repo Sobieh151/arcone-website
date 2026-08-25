@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { Reveal } from "@/components/animations/reveal";
 import { MaskReveal } from "@/components/animations/mask-reveal";
+import { Magnetic } from "@/components/buttons/magnetic";
 import { Button } from "@/components/buttons/button";
 import { contactCta } from "@/content/shared";
 
@@ -30,18 +31,19 @@ export function ContactCta() {
           </p>
         </Reveal>
         <Reveal delay={0.2}>
-          <Button
-            href={contactCta.cta.href}
-            className="mt-10"
-            icon={
-              <ArrowRight
-                size={16}
-                className="transition-transform group-hover:translate-x-1"
-              />
-            }
-          >
-            {contactCta.cta.label}
-          </Button>
+          <Magnetic className="mt-10 inline-block">
+            <Button
+              href={contactCta.cta.href}
+              icon={
+                <ArrowRight
+                  size={16}
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              }
+            >
+              {contactCta.cta.label}
+            </Button>
+          </Magnetic>
         </Reveal>
       </div>
     </section>

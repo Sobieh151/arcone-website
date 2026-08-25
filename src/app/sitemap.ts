@@ -1,36 +1,19 @@
 import type { MetadataRoute } from "next";
-import { projects } from "@/data/projects";
-import { blogPosts } from "@/data/blog-posts";
 import { siteConfig } from "@/content/seo";
 
 const siteUrl = siteConfig.url;
 
-// Ensure sitemap is static for `output: 'export'` builds.
+// Cheap to precompute and doesn't need per-request freshness.
 export const dynamic = "force-static";
 
+// No per-project routes: individual case studies are a modal overlay on
+// /work now (project-modal.tsx), not their own `/work/[slug]` URL, so
+// there's nothing beyond /work itself to list here.
 export default function sitemap(): MetadataRoute.Sitemap {
-  const staticRoutes = ["", "/services", "/work", "/about", "/contact", "/blog", "/privacy"].map(
-    (route) => ({
-      url: `${siteUrl}${route}`,
-      lastModified: new Date(),
-      changeFrequency: "monthly" as const,
-      priority: route === "" ? 1 : 0.8,
-    })
-  );
-
-  const workRoutes = projects.map((project) => ({
-    url: `${siteUrl}/work/${project.slug}`,
+  return ["", "/services", "/work", "/about", "/start", "/privacy"].map((route) => ({
+    url: `${siteUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: "monthly" as const,
-    priority: 0.6,
+    priority: route === "" ? 1 : 0.8,
   }));
-
-  const blogRoutes = blogPosts.map((post) => ({
-    url: `${siteUrl}/blog/${post.slug}`,
-    lastModified: new Date(post.date),
-    changeFrequency: "yearly" as const,
-    priority: 0.5,
-  }));
-
-  return [...staticRoutes, ...workRoutes, ...blogRoutes];
 }

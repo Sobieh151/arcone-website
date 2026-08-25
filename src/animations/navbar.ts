@@ -10,17 +10,20 @@ export const navPillTransition = {
   ease: [0.16, 1, 0.3, 1] as const,
 };
 
+// Full-screen mobile panel (fixed inset-0), not a small dropdown card —
+// fades/slides in as one block.
 export const mobileMenuVariants = {
-  hidden: { opacity: 0, y: -12 },
-  visible: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -12 },
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+  exit: { opacity: 0 },
 };
 
-export const mobileMenuTransition = { duration: 0.3 };
+export const mobileMenuTransition = { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const };
 
-// Scroll thresholds that drive the navbar's show/hide + glass-solidify
-// behavior — tune the feel of the nav here instead of in the component.
+// Scroll threshold that drives the navbar's hide-on-scroll-down behavior —
+// tune the feel of the nav here instead of in the component. The pill's
+// background is now a fixed rgba() per the nav spec, so there's no
+// separate "solidify" threshold anymore.
 export const navScrollConfig = {
-  solidAfterPx: 24,
   hideAfterPx: 120,
 };

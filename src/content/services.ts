@@ -1,5 +1,9 @@
 // Services offered. Adding a new service is just a new object here — it
 // automatically appears in the homepage teaser and the /services page.
+//
+// Restructured around ARCone's five capabilities. Names are final; every
+// description/deliverable below is a [[ placeholder ]] for the copy pass —
+// see the project plan for the placeholder-copy rule.
 
 export type Service = {
   slug: string;
@@ -11,42 +15,58 @@ export type Service = {
 
 export const services: Service[] = [
   {
-    slug: "brand-strategy-identity",
-    name: "Brand Strategy & Identity",
-    shortName: "Brand",
-    description:
-      "Positioning, naming and visual identity systems built on a single idea, not a mood board. The work that decides what the company stands for before anyone designs a logo.",
+    slug: "digital-marketing",
+    name: "Digital Marketing",
+    shortName: "Digital Marketing",
+    description: "[[ Digital Marketing — one-paragraph description ]]",
     deliverables: [
-      "Brand strategy & positioning",
-      "Naming",
-      "Visual identity systems",
-      "Brand guidelines",
+      "[[ Deliverable ]]",
+      "[[ Deliverable ]]",
+      "[[ Deliverable ]]",
     ],
   },
   {
-    slug: "website-product-design",
-    name: "Website & Product Design",
-    shortName: "Website & Product",
-    description:
-      "Marketing sites and product interfaces designed to convert, not just impress. Built and shipped, not just handed off as files.",
+    slug: "media-production",
+    name: "Media Production",
+    shortName: "Media Production",
+    description: "[[ Media Production — one-paragraph description ]]",
     deliverables: [
-      "Marketing websites",
-      "Product & UI/UX design",
-      "Design systems",
-      "Web development",
+      "[[ Deliverable ]]",
+      "[[ Deliverable ]]",
+      "[[ Deliverable ]]",
     ],
   },
   {
-    slug: "social-performance-creative",
-    name: "Social & Performance Creative",
-    shortName: "Social & Performance",
-    description:
-      "Ongoing content and campaign creative for brands that need to show up consistently — built to perform, not just to look good in a feed.",
+    slug: "branding",
+    name: "Branding",
+    shortName: "Branding",
+    description: "[[ Branding — one-paragraph description ]]",
     deliverables: [
-      "Social content production",
-      "Campaign creative",
-      "Performance ad creative",
-      "Content systems",
+      "[[ Deliverable ]]",
+      "[[ Deliverable ]]",
+      "[[ Deliverable ]]",
+    ],
+  },
+  {
+    slug: "web-app",
+    name: "Web & App",
+    shortName: "Web & App",
+    description: "[[ Web & App — one-paragraph description ]]",
+    deliverables: [
+      "[[ Deliverable ]]",
+      "[[ Deliverable ]]",
+      "[[ Deliverable ]]",
+    ],
+  },
+  {
+    slug: "media-activations",
+    name: "Media & Activations",
+    shortName: "Media & Activations",
+    description: "[[ Media & Activations — one-paragraph description ]]",
+    deliverables: [
+      "[[ Deliverable ]]",
+      "[[ Deliverable ]]",
+      "[[ Deliverable ]]",
     ],
   },
 ];

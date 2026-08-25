@@ -7,21 +7,18 @@ export type NavLink = {
   label: string;
 };
 
+// Logo covers "/" — the pill's text links are just these three.
 export const mainNav: NavLink[] = [
-  { href: "/", label: "Home" },
-  { href: "/services", label: "Services" },
   { href: "/work", label: "Work" },
+  { href: "/services", label: "Services" },
   { href: "/about", label: "About" },
-  { href: "/blog", label: "Journal" },
-  { href: "/contact", label: "Contact" },
 ];
 
 export const footerNav: NavLink[] = [
-  { href: "/services", label: "Services" },
   { href: "/work", label: "Work" },
+  { href: "/services", label: "Services" },
   { href: "/about", label: "About" },
-  { href: "/blog", label: "Journal" },
-  { href: "/contact", label: "Contact" },
+  { href: "/start", label: "Start a Project" },
 ];
 
 export type SocialLink = {
