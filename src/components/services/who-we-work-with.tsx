@@ -15,8 +15,10 @@ export function WhoWeWorkWith() {
               </span>
             </Reveal>
             <StaggerGroup className="mt-8 flex flex-wrap gap-3" staggerChildren={0.04}>
-              {idealClients.map((client) => (
-                <StaggerItem key={client} y={16}>
+              {idealClients.map((client, i) => (
+                // Index, not the text: every entry is currently the same
+                // "[[ Ideal client type ]]" placeholder, which collided.
+                <StaggerItem key={i} y={16}>
                   <span className="inline-block rounded-full border border-border px-5 py-2.5 text-sm text-gray-light transition-colors hover:border-orange hover:text-white">
                     {client}
                   </span>
@@ -31,8 +33,10 @@ export function WhoWeWorkWith() {
               </span>
             </Reveal>
             <StaggerGroup className="mt-8 flex flex-wrap gap-3" staggerChildren={0.04}>
-              {industries.map((industry) => (
-                <StaggerItem key={industry} y={16}>
+              {industries.map((industry, i) => (
+                // Index, not the text: every entry is currently the same
+                // "[[ Industry ]]" placeholder, which collided.
+                <StaggerItem key={i} y={16}>
                   <span className="inline-block rounded-full border border-border px-5 py-2.5 text-sm text-gray-light transition-colors hover:border-orange hover:text-white">
                     {industry}
                   </span>

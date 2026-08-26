@@ -1,8 +1,17 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useSetAppReady } from "@/components/providers/app-ready";
 export default function Loader() {
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
+  const setAppReady = useSetAppReady();
+  // Reports completion outward once — see app-ready.tsx for why anything
+  // timed to "the page just loaded" (the hero's opening sequence, the
+  // nav's entrance) needs to wait on this instead of its own mount time.
+  // Doesn't change anything about Loader's own visuals/timing.
+  useEffect(() => {
+    if (done) setAppReady(true);
+  }, [done, setAppReady]);
   useEffect(() => {
     const start = Date.now();
     const MIN = 1400;

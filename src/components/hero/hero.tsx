@@ -1,49 +1,53 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ArrowDown, ArrowRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { Magnetic } from "@/components/buttons/magnetic";
 import { Button } from "@/components/buttons/button";
 import { hero } from "@/content/home";
-import { heroLineVariants, heroFadeIn } from "@/animations/hero";
+import { heroEase, heroFadeIn, heroHeadlineVariants, heroSequence } from "@/animations/hero";
 import { heroParallax } from "@/animations/scroll-parallax";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
-import { useTilt } from "@/lib/use-tilt";
+import { useParallaxLayers } from "@/lib/use-parallax-layers";
+import { useAppReady } from "@/components/providers/app-ready";
+import { HeroScene, ArcMark, AuraHook } from "@/components/hero/hero-background";
 
-const GradientScene = dynamic(
-  () => import("@/components/backgrounds/gradient-scene").then((m) => m.GradientScene),
-  { ssr: false }
-);
+const arrow = <ArrowUpRight size={16} className="transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-0.5" />;
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
-  const bgRef = useRef<HTMLDivElement>(null);
-  const reducedMotion = usePrefersReducedMotion();
-  // tilt: false — the badge is a small pill, not a tile; only the
-  // cursor-tracking shine (glass-shine) runs, no 3D rotation. Destructured
-  // (not kept as a `badge.ref` object) — eslint's react-hooks/refs rule
-  // flags property access into an object carrying a ref.
-  const {
-    ref: badgeRef,
-    onMouseMove: onBadgeMouseMove,
-    onMouseLeave: onBadgeMouseLeave,
-    style: badgeStyle,
-  } = useTilt<HTMLSpanElement>({ tilt: false });
+  // The whole scene (SVG background + ARC mark) scales/dims together as
+  // the section scrolls past — the one piece of scroll-linked (not
+  // viewport-entry) motion here, a depth cue rather than a static backdrop.
+  const sceneWrapRef = useRef<HTMLDivElement>(null);
 
-  // Scroll-linked (not viewport-entry) motion: as the hero scrolls past,
-  // its background drifts, scales up and dims — a depth cue rather than
-  // a static backdrop. Real ScrollTrigger usage, not just registered and
-  // left idle.
+  const backgroundRef = useRef<SVGSVGElement>(null);
+  const mountainRef = useRef<SVGGElement>(null);
+  const trailRef = useRef<SVGGElement>(null);
+  const markRef = useRef<HTMLDivElement>(null);
+
+  const reducedMotion = usePrefersReducedMotion();
+  const appReady = useAppReady();
+  // Reduced-motion users get the final state immediately regardless of
+  // Loader (their `initial={false}` branches below never animate in the
+  // first place); everyone else's entrance waits for Loader to actually
+  // finish. See app-ready.tsx.
+  const reveal = reducedMotion || appReady;
+
+  useParallaxLayers(
+    { background: backgroundRef, mountain: mountainRef, lightTrail: trailRef, mark: markRef },
+    !reducedMotion
+  );
+
   useEffect(() => {
-    if (reducedMotion || !sectionRef.current || !bgRef.current) return;
+    if (reducedMotion || !sectionRef.current || !sceneWrapRef.current) return;
 
     gsap.registerPlugin(ScrollTrigger);
     const ctx = gsap.context(() => {
-      gsap.to(bgRef.current, {
+      gsap.to(sceneWrapRef.current, {
         scale: heroParallax.scaleTo,
         yPercent: heroParallax.yPercentTo,
         opacity: heroParallax.opacityTo,
@@ -60,103 +64,149 @@ export function Hero() {
     return () => ctx.revert();
   }, [reducedMotion]);
 
-  // No separate cursor-reactive spotlight here — GradientScene's shader
-  // already tracks the pointer itself (see its `uMouse` uniform) and
-  // blooms a highlight toward it; a second CSS layer doing the same thing
-  // on top would just be a redundant, less-smooth copy of an effect the
-  // banner already has.
-
   return (
     // `isolate` (not `bg-bg`) makes this section its own stacking-context
     // root: without it, `-z-10` children go looking for the nearest
     // ancestor that establishes one, land behind <body>'s own opaque
     // background instead, and never paint at all. No need for a section
-    // bg — body is already the same black.
+    // bg — body is already --ink.
     <section
       ref={sectionRef}
-      className="relative isolate flex min-h-screen w-full flex-col items-center justify-center overflow-hidden"
+      className="relative isolate flex min-h-screen w-full flex-col justify-center overflow-hidden bg-ink"
     >
-      <div ref={bgRef} className="absolute inset-0 -z-10">
-        <GradientScene className="absolute inset-0" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black" />
+      {/* ArcMark lives inside this wrapper (not as a sibling) specifically
+          so the GSAP scroll effect below — which targets sceneWrapRef —
+          scales/dims it along with the SVG background, per "the whole
+          scene (SVG background + ARC mark) scales/dims together" above.
+          It still paints above the background/gradient (last in source
+          order) and below the z-10 content below (this whole wrapper is
+          -z-10), so visual stacking is unchanged from a flat sibling
+          layout — only the scroll-linked motion is added. */}
+      <div ref={sceneWrapRef} className="absolute inset-0 -z-10">
+        <HeroScene
+          backgroundRef={backgroundRef}
+          mountainRef={mountainRef}
+          trailRef={trailRef}
+          reducedMotion={reducedMotion}
+          reveal={reveal}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-ink/80" />
+
+        {/* ARC mark + its startup aura hook — large, right side, vertically
+            centered on desktop; upper-right and smaller on mobile, per the
+            mobile spec. Both are sized off this one shared, responsively
+            positioned wrapper, rather than each carrying its own copy of
+            the same breakpoints — the aura just blooms bigger (190%,
+            centered) within it. */}
+        <div className="pointer-events-none absolute right-6 top-28 z-0 h-20 w-20 sm:right-10 sm:top-32 sm:h-28 sm:w-28 md:right-[6vw] md:top-1/2 md:h-[26vw] md:max-h-[420px] md:w-[26vw] md:max-w-[420px] md:-translate-y-1/2">
+          <AuraHook
+            reducedMotion={reducedMotion}
+            reveal={reveal}
+            className="absolute left-1/2 top-1/2 -z-10 h-[190%] w-[190%] -translate-x-1/2 -translate-y-1/2"
+          />
+          <ArcMark
+            ref={markRef}
+            reducedMotion={reducedMotion}
+            reveal={reveal}
+            className="absolute inset-0"
+          />
+        </div>
       </div>
 
-      <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-6 text-center">
-        <motion.span
-          ref={badgeRef}
-          onMouseMove={onBadgeMouseMove}
-          onMouseLeave={onBadgeMouseLeave}
-          style={badgeStyle}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.4, duration: 0.8 }}
-          className="glass glass-shine relative mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs uppercase tracking-widest text-gray-light"
-        >
-          {hero.eyebrow}
-        </motion.span>
+      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-6 py-32 sm:px-10 lg:px-16">
+        {reducedMotion ? (
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-arc">
+            {hero.eyebrow}
+          </span>
+        ) : (
+          <motion.span
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: reveal ? 1 : 0, y: reveal ? 0 : 8 }}
+            transition={{
+              delay: heroSequence.eyebrow.delay,
+              duration: heroSequence.eyebrow.duration,
+              ease: heroEase,
+            }}
+            className="font-mono text-xs uppercase tracking-[0.2em] text-arc"
+          >
+            {hero.eyebrow}
+          </motion.span>
+        )}
 
-        <h1 className="text-balance text-5xl font-semibold leading-[1.05] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
-          {hero.headlineLines.map((text, i) => (
-            <span key={text} className="block overflow-hidden pb-1">
-              <motion.span
-                custom={i}
-                initial="hidden"
-                animate="visible"
-                variants={heroLineVariants}
-                className="block"
-              >
-                {text}
-              </motion.span>
+        <h1 className="mt-6 max-w-3xl font-heading text-[clamp(2.75rem,9vw,5.5rem)] font-extrabold uppercase leading-[0.86] tracking-[-0.045em] text-paper">
+          {hero.headline.map((line, i) => (
+            <span key={line.text} className="block overflow-hidden pb-1">
+              {reducedMotion ? (
+                <span className="block">
+                  {line.text}
+                  {line.accent && <span className="text-arc">{line.accent}</span>}
+                </span>
+              ) : (
+                <motion.span
+                  custom={i}
+                  initial="hidden"
+                  animate={reveal ? "visible" : "hidden"}
+                  variants={heroHeadlineVariants}
+                  className="block"
+                >
+                  {line.text}
+                  {line.accent && <span className="text-arc">{line.accent}</span>}
+                </motion.span>
+              )}
             </span>
           ))}
         </h1>
 
-        <motion.p
-          {...heroFadeIn(0.9)}
-          className="mt-8 max-w-xl text-balance text-lg text-gray-light md:text-xl"
-        >
-          {hero.subhead}
-        </motion.p>
+        {reducedMotion ? (
+          <p className="mt-8 max-w-[28ch] text-base text-paper/65 sm:text-lg">{hero.subhead}</p>
+        ) : (
+          <motion.p
+            {...heroFadeIn(heroSequence.subhead, reveal)}
+            className="mt-8 max-w-[28ch] text-base text-paper/65 sm:text-lg"
+          >
+            {hero.subhead}
+          </motion.p>
+        )}
 
-        <motion.div
-          {...heroFadeIn(1.1)}
-          className="mt-10 flex flex-col items-center gap-4 sm:flex-row"
-        >
-          <Magnetic>
-            <Button
-              href={hero.primaryCta.href}
-              icon={
-                <ArrowRight
-                  size={16}
-                  className="transition-transform group-hover:translate-x-1"
-                />
-              }
-            >
-              {hero.primaryCta.label}
-            </Button>
-          </Magnetic>
-          <Magnetic>
-            <Button href={hero.secondaryCta.href} variant="secondary">
-              {hero.secondaryCta.label}
-            </Button>
-          </Magnetic>
-        </motion.div>
+        {reducedMotion ? (
+          <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
+            <CtaButtons />
+          </div>
+        ) : (
+          <motion.div
+            {...heroFadeIn(heroSequence.ctas, reveal)}
+            className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center"
+          >
+            <CtaButtons />
+          </motion.div>
+        )}
       </div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.8, duration: 1 }}
-        className="glass absolute bottom-10 flex flex-col items-center gap-2 rounded-full px-5 py-3 text-gray-medium"
-      >
-        <span className="text-[11px] uppercase tracking-widest">Scroll</span>
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <ArrowDown size={14} />
-        </motion.div>
-      </motion.div>
     </section>
+  );
+}
+
+function CtaButtons() {
+  return (
+    <>
+      <Magnetic className="w-full sm:w-auto">
+        <Button
+          href={hero.primaryCta.href}
+          icon={arrow}
+          className="cta-wipe relative w-full uppercase tracking-wide sm:w-auto"
+        >
+          {hero.primaryCta.label}
+        </Button>
+      </Magnetic>
+      <Magnetic className="w-full sm:w-auto">
+        <Button
+          href={hero.secondaryCta.href}
+          variant="secondary"
+          icon={arrow}
+          className="cta-wipe relative w-full uppercase tracking-wide sm:w-auto"
+        >
+          {hero.secondaryCta.label}
+        </Button>
+      </Magnetic>
+    </>
   );
 }

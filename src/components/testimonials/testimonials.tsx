@@ -57,7 +57,10 @@ export function Testimonials() {
           <div className="flex items-center gap-2">
             {quotes.map((q, i) => (
               <button
-                key={q.name}
+                // Index, not q.name: the current placeholder testimonials
+                // all share the literal name "[[ Client name ]]" until the
+                // real copy pass, which made `key={q.name}` collide.
+                key={i}
                 type="button"
                 onClick={() => setIndex(i)}
                 aria-label={`Go to testimonial ${i + 1}`}

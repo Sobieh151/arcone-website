@@ -13,8 +13,10 @@ export function Values() {
           </span>
         </Reveal>
         <StaggerGroup className="mt-10 flex flex-wrap gap-4" staggerChildren={0.04}>
-          {values.map((value) => (
-            <StaggerItem key={value} y={16}>
+          {values.map((value, i) => (
+            // Index, not the value text: every entry is currently the
+            // same "[[ Value ]]" placeholder, which made this collide.
+            <StaggerItem key={i} y={16}>
               <span className="inline-block rounded-full border border-border px-6 py-3 text-base text-gray-light transition-colors hover:border-orange hover:text-white sm:text-lg">
                 {value}
               </span>

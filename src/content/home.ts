@@ -8,18 +8,27 @@
 
 import { primaryCta } from "@/content/shared";
 
-export const hero = {
-  eyebrow: "[[ Hero eyebrow ]]",
-  headlineLines: ["[[ Hero headline line one ]]", "[[ Hero headline line two ]]"],
-  subhead: "[[ Hero subhead — one to two sentences ]]",
-  primaryCta,
-  secondaryCta: { label: "View Our Work", href: "/work" },
-};
+export type HeroHeadlineLine = { text: string; accent?: string };
 
-export const workPreview = {
-  eyebrow: "[[ Work preview eyebrow ]]",
-  heading: "[[ Work preview heading ]]",
-  cta: { label: "All Work", href: "/work" },
+// Hero copy (components/hero/hero.tsx). Eyebrow, headline and CTA labels
+// are the brief's literal, final copy — not placeholders like the rest of
+// the site's page-shell prose. `accent` on a headline line renders in
+// --arc instead of --paper (see the hero spec: "ARC." is the one word
+// that isn't --paper). The subhead's actual wording wasn't specified
+// (only its width: ~28ch), so it stays a placeholder like everything else
+// on the site pending the real copy pass.
+export const hero = {
+  eyebrow: "CREATIVE AGENCY",
+  headline: [
+    { text: "WHERE" },
+    { text: "BRANDS" },
+    { text: "FIND THEIR" },
+    { text: "FIRST ", accent: "ARC." },
+  ] satisfies HeroHeadlineLine[],
+  subhead: "[[ Hero subhead — one short line, ~28 characters wide ]]",
+  // primaryCta already reads "Start a Project" / "/start" from shared.ts.
+  primaryCta,
+  secondaryCta: { label: "Explore Our Work", href: "/work" },
 };
 
 export const aboutTeaser = {

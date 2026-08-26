@@ -1,24 +1,45 @@
 @import "tailwindcss";
 
 :root {
-  --color-bg: #000000;
-  --color-bg-secondary: #090909;
-  --color-card: #121212;
-  --color-surface: #171717;
-  --color-border: rgba(255, 255, 255, 0.06);
+  /* Brand tokens (hero palette brief). These are the source of truth —
+     most --color-* below derive from one of these instead of carrying
+     their own hex, so most of the site reskins from these six values.
+     Exceptions that still carry an independent hex (not part of the
+     brief's six, so nothing to alias them to): --color-surface,
+     --color-orange-burnt, --color-gray-light/-medium/-dark. */
+  --ink: #050505;
+  --ink-soft: #0d0d0d;
+  --line: #1f1f1f;
+  --mute: #6f6d6a;
+  --paper: #ebe8e3;
+  --arc: #ff4a0d;
+  /* Hover/highlight tint for --arc — not one of the six given tokens, but
+     every filled-orange element needs a visibly brighter hover state
+     (buttons, focus rings, cursor). Reads as "the same light, turned up,"
+     not a different hue. */
+  --arc-bright: #ff6a33;
 
-  --color-orange: #e85002;
-  --color-orange-secondary: #c13001;
-  --color-orange-highlight: #ff6001;
+  --color-bg: var(--ink);
+  --color-bg-secondary: var(--ink-soft);
+  --color-card: var(--ink-soft);
+  --color-surface: #141414;
+  --color-border: var(--line);
+
+  --color-orange: var(--arc);
+  --color-orange-secondary: var(--arc);
+  --color-orange-highlight: var(--arc-bright);
   --color-orange-burnt: #9c3f0b;
 
-  --color-white: #f9f9f9;
-  --color-gray-light: #a7a7a7;
-  /* #808080, not the brief's #646464: at small sizes (dates, index
-     numbers, footer copyright) #646464-on-black is ~3.35:1 contrast,
-     under WCAG AA's 4.5:1 for normal text. #808080 clears ~5.3:1. */
-  --color-gray-medium: #808080;
-  --color-gray-dark: #333333;
+  --color-white: var(--paper);
+  /* --mute itself is ~3.96:1 on --ink — under WCAG AA's 4.5:1 for normal
+     text (the same gap the site's original gray token below once flagged
+     for a different exact value). Nav links, card copy and footer text
+     all need normal-text AA, so these two lift --mute slightly rather than
+     aliasing it 1:1; --mute stays exactly as specified for callers (like
+     the hero) that were given it directly, or use it at large sizes. */
+  --color-gray-light: #85837f; /* ~5.4:1 on --ink */
+  --color-gray-medium: #7d7b77; /* ~4.8:1 on --ink */
+  --color-gray-dark: #2a2a2a;
 
   /* The site's one signature easing curve (already used throughout
      hero.ts/reveal.ts/navbar.ts's Framer/GSAP transitions) — exposed here
@@ -54,7 +75,21 @@
   --color-gray-medium: var(--color-gray-medium);
   --color-gray-dark: var(--color-gray-dark);
 
+  /* Same six brand tokens, exposed under their own names too (bg-ink,
+     text-paper, text-arc, border-line, …) — for the hero and anything
+     future that wants the literal brief vocabulary instead of the
+     legacy bg/white/orange naming above. Same underlying values either
+     way; nothing to keep in sync by hand. */
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-mute: var(--mute);
+  --color-paper: var(--paper);
+  --color-arc: var(--arc);
+  --color-arc-bright: var(--arc-bright);
+
   --font-sans: var(--font-inter);
+  --font-heading: var(--font-archivo);
 
   --animate-fade-up: fade-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-marquee: marquee 30s linear infinite;
@@ -237,6 +272,248 @@ html.lenis body {
   opacity: 1;
 }
 
+/* ------------------------------------------------------------------ */
+/* Hero CTA hover: an --arc-bright surface wipes in from the leading edge,
+   a soft glow blooms, and the arrow nudges forward via the existing
+   group-hover pattern (see hero.tsx) — the label itself never moves.
+   transform + box-shadow only, no width/background-position, so it stays
+   compositor-only.
+     No `position` here, same reasoning as `.glass` above: Tailwind's own
+   utilities sit in a lower-priority cascade layer than this plain CSS, so
+   an unconditional `position: relative` would beat a call site's own
+   positioning utility regardless of source order. Callers bring `relative`
+   themselves (hero.tsx does, via className).
+     Only really visible on the outline CTA — the filled one has no
+   `background` of its own on this element (buttonStyles' `secondary`/
+   `outline` variants are border-only), so the wipe is the only fill
+   there is to see. On the filled/primary CTA, `isolation: isolate` +
+   `z-index: -1` still paint this ::before *above* that variant's own
+   `bg-orange` (negative z-index only sinks below a stacking context's
+   own background within nested descendants, not below the box's own
+   background paint), it's just invisible there because the wipe's fixed
+   --arc-bright fill already matches buttonStyles' own
+   `hover:bg-orange-highlight` target color for that variant — same
+   color painted on top of itself. */
+.cta-wipe {
+  isolation: isolate;
+  overflow: hidden;
+  transition:
+    box-shadow 0.5s var(--ease-smooth),
+    border-color 0.5s var(--ease-smooth);
+}
+
+.cta-wipe::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--arc-bright);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.5s var(--ease-smooth);
+}
+
+.cta-wipe:hover,
+.cta-wipe:focus-visible {
+  /* Beats buttonStyles' own `hover:border-white/30` + `text-white`
+     (Tailwind utilities, lower-priority layer than this plain CSS): the
+     outline CTA's border matches the fill wiping in behind it instead of
+     staying paper-tinted, and the label goes dark for the same reason the
+     filled CTA is already `text-black` on its own orange base — --paper
+     on --arc-bright is ~2.3:1, well under AA; --ink on it is ~7:1. */
+  border-color: var(--arc-bright);
+  color: var(--ink);
+  box-shadow: 0 0 32px rgba(255, 74, 13, 0.35);
+}
+
+.cta-wipe:hover::before,
+.cta-wipe:focus-visible::before {
+  transform: scaleX(1);
+}
+
+/* ------------------------------------------------------------------ */
+/* Hero ambient motion — continuous, barely-perceptible loops that keep
+   running after the opening sequence. Declarative CSS keyframes rather
+   than a rAF loop: cheaper on a mid-range Android, and the sitewide
+   `prefers-reduced-motion` rule further down already zeroes every
+   animation-duration to 0.01ms, so reduced-motion support is automatic —
+   nothing in hero-background.tsx has to check for it itself. */
+@keyframes hero-haze-drift {
+  0%, 100% { transform: translate3d(-2%, 0, 0); }
+  50% { transform: translate3d(2%, 0, 0); }
+}
+
+.hero-haze {
+  animation: hero-haze-drift 34s ease-in-out infinite;
+}
+
+/* offset-distance, not stroke-dashoffset — see the long comment on
+   hero-trail-bright's <ellipse> in hero-background.tsx for why: this is
+   the fix for the single biggest performance cost on this page. */
+@keyframes hero-trail-flow {
+  from { offset-distance: 0%; }
+  to { offset-distance: 100%; }
+}
+
+.hero-trail-bright {
+  animation: hero-trail-flow 8s linear infinite;
+}
+
+@keyframes hero-mark-glow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+.hero-mark-glow {
+  animation: hero-mark-glow 6s ease-in-out infinite;
+}
+
+@keyframes hero-mark-sweep {
+  0%, 85%, 100% { transform: translate3d(-120%, 0, 0); }
+  92% { transform: translate3d(120%, 0, 0); }
+}
+
+.hero-mark-sweep {
+  animation: hero-mark-sweep 9s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------------ */
+/* Trusted-by client marquee (components/sections/trusted-by.tsx) — a
+   continuous right-to-left ticker. Reuses the `marquee` keyframe already
+   declared in @theme above (translateX 0 -> -50%); this is its own class
+   rather than the `animate-marquee` utility because the hover slow-down
+   needs its own tunable duration, not @theme's fixed 30s. */
+.marquee-mask {
+  mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 10%,
+    #000 90%,
+    transparent
+  );
+}
+
+/* animation-duration itself has no defined interpolation — a plain
+   `transition: animation-duration` would just snap partway through
+   instead of easing. Registering --marquee-duration as a <time> lets the
+   browser tween the number smoothly instead, and since the running
+   animation recalculates its position from elapsed-time / duration every
+   frame, a smoothly-changing duration produces a smooth deceleration
+   with no jump in scroll position — not just a smoothly-changing number
+   that then snaps the motion when it's applied. */
+@property --marquee-duration {
+  syntax: "<time>";
+  inherits: true;
+  initial-value: 45s;
+}
+
+.marquee-track {
+  --marquee-duration: 45s;
+  width: fit-content;
+  animation: marquee var(--marquee-duration) linear infinite;
+  transition: --marquee-duration 0.6s var(--ease-smooth);
+  will-change: transform;
+}
+
+/* Slows toward half speed on hover/focus rather than stopping dead —
+   "roughly half speed," not paused. */
+.marquee-row:hover .marquee-track,
+.marquee-row:focus-within .marquee-track {
+  --marquee-duration: 90s;
+}
+
+/* "TRUSTED BY" label ambient aura — a soft --arc glow sitting behind the
+   text, lighting it rather than coloring it. Sized off the label's own
+   box (absolute + a relative parent sized to the label, see the
+   component): 200%/280% reads as "roughly 2x the label," bled a bit
+   taller since an ambient glow, not a flat bar, is the goal. The blur is
+   set once, statically — only opacity ever animates, never the filter
+   itself. 7s, not 6s or 8s, so it drifts in and out of phase with the
+   hero mark's own 6s glow / 8s trail pulses instead of ever
+   synchronizing into one visible shared beat. */
+.trusted-aura {
+  width: 200%;
+  height: 280%;
+  background: radial-gradient(circle, var(--arc), transparent 70%);
+  filter: blur(24px);
+  opacity: 0.18;
+  animation: trusted-aura-breathe 7s ease-in-out infinite;
+}
+
+@keyframes trusted-aura-breathe {
+  0%, 100% { opacity: 0.12; }
+  50% { opacity: 0.26; }
+}
+
+/* The label's actual color stays --mute at rest — only a highlight band
+   moves across it, via background-clip: text (the technique the brief
+   asks for, which needs a transparent text color to let the gradient
+   show through the glyphs instead — not a rendering slip). Parked at
+   200% 0 (off to the right, past the text) almost all the time; the
+   keyframes below spend 13.333% of each 12s cycle — 1.6s — actually
+   sweeping it across to -100% 0, then hold there (visually identical to
+   the parked start: the band is off-screen either way) until the next
+   loop. Peak of the gradient is --paper, never pure white. */
+.trusted-label {
+  background-image: linear-gradient(
+    100deg,
+    var(--mute) 42%,
+    var(--paper) 50%,
+    var(--mute) 58%
+  );
+  background-size: 260% 100%;
+  background-position: 200% 0;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: trusted-label-sweep 12s ease-in-out infinite;
+}
+
+@keyframes trusted-label-sweep {
+  0% { background-position: 200% 0; }
+  13.333%, 100% { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The sitewide reduced-motion rule further down already forces every
+     animation-duration to ~0 and every iteration-count to 1, which would
+     just snap this to its end frame — not the "static, centred row" the
+     brief asks for. This turns the animation off outright and collapses
+     the layout back to one centered, non-duplicated row instead. */
+  .marquee-track {
+    animation: none;
+    transition: none;
+  }
+
+  .marquee-track > *:nth-child(2) {
+    display: none;
+  }
+
+  /* .marquee-row's own justify-content can't center anything here: its
+     .marquee-mask child is flex-1 and already consumes all the row's free
+     space, leaving none for justify-content to distribute. The centering
+     has to happen one level in, inside that now-fully-wide viewport. */
+  .marquee-track {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* No breathing, fixed at 15% per the brief. */
+  .trusted-aura {
+    animation: none;
+    opacity: 0.15;
+  }
+
+  /* No sweep — animation: none leaves it parked at the base
+     background-position (200% 0) declared above, which already reads as
+     plain --mute text with the highlight band off-screen. */
+  .trusted-label {
+    animation: none;
+  }
+}
+
 /* Custom cursor hides native cursor on capable devices */
 @media (hover: hover) and (pointer: fine) {
   body {
@@ -256,6 +533,77 @@ textarea:focus-visible,
   outline: 2px solid var(--color-orange-highlight);
   outline-offset: 3px;
   border-radius: 2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Explore Work carousel (components/portfolio/explore-work.tsx). Every
+   card's position/scale/opacity/blur/glow comes from CSS custom
+   properties set per-card from React (--card-distance, --card-scale,
+   --card-opacity, --card-blur, --card-z, --card-glow) — a discrete
+   value per active/adjacent/further-out tier, changed only when the
+   active index changes, never per-frame. The 700ms transition below is
+   what actually animates the move between tiers; nothing here runs a
+   rAF loop except the drag itself (use-carousel-drag.ts), which writes
+   --drag-offset imperatively for zero-lag pointer tracking. */
+.explore-card {
+  opacity: var(--card-opacity, 1);
+  filter: blur(var(--card-blur, 0px));
+  box-shadow: var(--card-glow, none);
+  transition:
+    transform 700ms var(--ease-smooth),
+    opacity 700ms var(--ease-smooth),
+    filter 700ms ease,
+    box-shadow 700ms ease;
+  will-change: transform;
+}
+
+/* Desktop: absolutely positioned on a shared center point, offset by
+   --card-distance card-widths (--card-spacing) plus the live drag
+   offset — custom properties inherit, so --drag-offset (written to
+   .explore-track, the parent) reaches every card for free. */
+.explore-card--desktop {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform:
+    translate(-50%, -50%)
+    translateX(calc(var(--card-distance, 0) * var(--card-spacing, 230px) + var(--drag-offset, 0px)))
+    scale(var(--card-scale, 1));
+  z-index: var(--card-z, 1);
+}
+
+/* Mobile / reduced-motion: a plain flex item in the native scroll-snap
+   row (explore-work.tsx) — only the tier's scale, no positioning math. */
+.explore-card--mobile {
+  transform: scale(var(--card-scale, 1));
+}
+
+.explore-track {
+  --drag-offset: 0px;
+}
+
+/* Suppressed for the duration of a drag so cards track the pointer with
+   zero lag; re-enabled the instant the pointer lifts, so the snap to the
+   settled position animates — see the CRITICAL note in the brief this
+   implements (use-carousel-drag.ts) on why that split is what makes it
+   read as a physical object instead of a slider. */
+.explore-track.is-dragging .explore-card {
+  transition: none;
+}
+
+.explore-scroll-row {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.explore-scroll-row::-webkit-scrollbar {
+  display: none;
+}
+
+.explore-scroll-row > * {
+  scroll-snap-align: center;
 }
 
 /* Respect the OS-level reduced-motion preference for anything not already

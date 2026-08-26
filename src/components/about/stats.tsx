@@ -7,7 +7,9 @@ export function Stats() {
     <section className="border-t border-border py-24">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-6 sm:gap-6 sm:px-10 md:grid-cols-4">
         {stats.map((stat, i) => (
-          <Reveal key={stat.label} delay={i * 0.06}>
+          // Index, not stat.label: every entry is currently the same
+          // "[[ Stat label ]]" placeholder, which made this collide.
+          <Reveal key={i} delay={i * 0.06}>
             <GlassCard className="h-full rounded-2xl px-6 py-8">
               <p className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
                 {stat.value}

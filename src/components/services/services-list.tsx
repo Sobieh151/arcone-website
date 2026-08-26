@@ -22,9 +22,12 @@ export function ServicesList() {
                 {service.description}
               </p>
               <ul className="flex flex-col gap-2 md:col-span-3">
-                {service.deliverables.map((item) => (
+                {service.deliverables.map((item, j) => (
                   <li
-                    key={item}
+                    // Index, not the item text: every deliverable is
+                    // currently the same "[[ Deliverable ]]" placeholder,
+                    // which made `key={item}` collide.
+                    key={j}
                     className="text-sm text-gray-light before:mr-2 before:text-orange-highlight before:content-['—']"
                   >
                     {item}

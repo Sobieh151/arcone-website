@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Archivo, Inter } from "next/font/google";
 import "./globals.css";
 import { MotionConfig } from "framer-motion";
+import { AppReadyProvider } from "@/components/providers/app-ready";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
 import { CustomCursor } from "@/components/cursor/custom-cursor";
 import Loader from "@/components/Loader";
@@ -74,43 +75,51 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} ${archivo.variable} h-full`}>
       <body className="flex min-h-full flex-col bg-bg antialiased">
-        <Loader />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              name: siteConfig.name,
-              url: siteConfig.url,
-              description: siteConfig.description,
-              sameAs: socialLinks.map((social) => social.href),
-            }),
-          }}
-        />
-        <a
-          href="#main-content"
-          className="fixed left-4 -top-24 z-[200] rounded-full bg-orange px-5 py-2.5 text-sm font-medium text-black transition-[top] focus:top-4"
-        >
-          Skip to content
-        </a>
-        {/* reducedMotion="user" makes every Framer Motion animation on the
-            site respect prefers-reduced-motion automatically (collapsing
-            transforms to instant, keeping opacity fades). Non-Framer motion
-            (the cursor, WebGL shader) is handled separately via
-            usePrefersReducedMotion in each of those components. Loader
-            (above) is the exception — it doesn't check reduced-motion. */}
-        <MotionConfig reducedMotion="user">
-          <SmoothScroll>
-            <CustomCursor />
-            <div className="grain" aria-hidden="true" />
-            <Nav />
-            <main id="main-content" className="flex-1">
-              {children}
-            </main>
-            <Footer />
-          </SmoothScroll>
-        </MotionConfig>
+        {/* One shared provider: Loader calls useSetAppReady() to report
+            its own completion outward, Nav and the homepage Hero call
+            useAppReady() to time their entrances off that instead of
+            their own mount — both need to be inside the SAME provider
+            instance, not siblings of it, for the context to actually
+            connect them. See app-ready.tsx. */}
+        <AppReadyProvider>
+          <Loader />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                name: siteConfig.name,
+                url: siteConfig.url,
+                description: siteConfig.description,
+                sameAs: socialLinks.map((social) => social.href),
+              }),
+            }}
+          />
+          <a
+            href="#main-content"
+            className="fixed left-4 -top-24 z-[200] rounded-full bg-orange px-5 py-2.5 text-sm font-medium text-black transition-[top] focus:top-4"
+          >
+            Skip to content
+          </a>
+          {/* reducedMotion="user" makes every Framer Motion animation on the
+              site respect prefers-reduced-motion automatically (collapsing
+              transforms to instant, keeping opacity fades). Non-Framer motion
+              (the cursor, WebGL shader) is handled separately via
+              usePrefersReducedMotion in each of those components. Loader
+              (above) is the exception — it doesn't check reduced-motion. */}
+          <MotionConfig reducedMotion="user">
+            <SmoothScroll>
+              <CustomCursor />
+              <div className="grain" aria-hidden="true" />
+              <Nav />
+              <main id="main-content" className="flex-1">
+                {children}
+              </main>
+              <Footer />
+            </SmoothScroll>
+          </MotionConfig>
+        </AppReadyProvider>
       </body>
     </html>
   );
