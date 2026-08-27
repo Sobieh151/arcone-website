@@ -18,7 +18,7 @@ const tags = {
  * Wrap a grid/list in this, use <StaggerItem> for each entry. The group
  * triggers once on scroll and cascades its children in sequence — for
  * places where every item currently gets an independently-computed
- * `delay={i * 0.06}` (Values, Process, Services, Work lists), which
+ * `delay={i * 0.06}` (Values, Services, Work lists), which
  * produces the same visual but as N copies of identical logic instead of
  * one orchestrated group.
  */

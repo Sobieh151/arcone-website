@@ -3,7 +3,6 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Reveal } from "@/components/animations/reveal";
 import { Values } from "@/components/about/values";
 import { Stats } from "@/components/about/stats";
-import { Process } from "@/components/sections/process";
 import { ContactCta } from "@/components/sections/contact-cta";
 import { aboutHeader, statement } from "@/content/about";
 
@@ -30,7 +29,6 @@ export default function AboutPage() {
 
       <Stats />
       <Values />
-      <Process />
       <ContactCta />
     </>
   );

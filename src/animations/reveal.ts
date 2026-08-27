@@ -19,7 +19,7 @@ export function revealVariants(y: number) {
   };
 }
 
-// Stagger orchestration for grids/lists (Values, Process, Services,
+// Stagger orchestration for grids/lists (Values, Services,
 // Work). One parent triggers once on scroll and cascades its children in
 // sequence — a choreographed group, not N independently-delayed copies
 // of the same fade.
