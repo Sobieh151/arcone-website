@@ -37,20 +37,33 @@ const CAROUSEL_PROJECTS: CarouselProject[] = [
   { slug: "harbor-co", title: "Harbor & Co.", category: "Digital Marketing", image: placeholderArt("#9C3F0B"), href: "/work" },
 ];
 
-// Visual state per ring — active / adjacent / further-out, exactly the
-// three tiers in the brief. `blur`/`glow` are fixed values per tier, only
-// ever changed by a discrete index update (never a per-frame loop); the
-// 700ms CSS transition (globals.css: .explore-card) is what animates the
-// move between them.
+// Visual state — just active / inactive now, a flatter binary tier than
+// the old active/adjacent/further-out split: a short teaser row doesn't
+// need the extra depth cue. `blur`/`border`/`glow` are fixed values per
+// tier, only ever changed by a discrete index update (never a per-frame
+// loop); the 700ms CSS transition (globals.css: .explore-card) is what
+// animates the move between them. The active card's `glow` combines two
+// shadows — an inset top light edge plus the outer bloom — box-shadow
+// happily takes a comma-separated list of both.
 function cardState(distance: number) {
-  const abs = Math.abs(distance);
-  if (abs === 0) {
-    return { scale: 1, opacity: 1, blur: 0, z: 30, glow: "0 0 50px rgba(255,74,13,0.14)" };
+  if (distance === 0) {
+    return {
+      scale: 1,
+      opacity: 1,
+      blur: 0,
+      z: 30,
+      border: "rgba(255,255,255,0.14)",
+      glow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 0 70px rgba(255,90,26,0.16)",
+    };
   }
-  if (abs === 1) {
-    return { scale: 0.86, opacity: 0.4, blur: 2, z: 20, glow: "none" };
-  }
-  return { scale: 0.8, opacity: 0.12, blur: 2, z: Math.max(1, 10 - abs), glow: "none" };
+  return {
+    scale: 0.88,
+    opacity: 0.42,
+    blur: 2.5,
+    z: Math.max(1, 10 - Math.abs(distance)),
+    border: "transparent",
+    glow: "none",
+  };
 }
 
 const WORK_HINT_SESSION_KEY = "arcone-work-hint";
@@ -271,10 +284,10 @@ export function ExploreWork() {
                     onPointerCancel={onPointerCancel}
                     onKeyDown={onKeyDown}
                     className={cn(
-                      "explore-track relative h-[360px] w-full max-w-xl touch-pan-y select-none overflow-hidden",
+                      "explore-track relative h-[240px] w-full max-w-xl touch-pan-y select-none overflow-hidden",
                       isDragging && "is-dragging"
                     )}
-                    style={{ "--card-spacing": "236px" } as CSSProperties}
+                    style={{ "--card-spacing": "264px" } as CSSProperties}
                   >
                     {CAROUSEL_PROJECTS.map((entry, index) => {
                       const distance = circularDistance(index, activeIndex, length);
@@ -289,7 +302,7 @@ export function ExploreWork() {
                           aria-current={isActive ? "true" : undefined}
                           tabIndex={Math.abs(distance) > 1 ? -1 : 0}
                           onClick={(e) => activate(index, e.currentTarget)}
-                          className="explore-card explore-card--desktop group w-[260px] overflow-hidden rounded-[20px] border border-line text-left"
+                          className="explore-card explore-card--desktop group w-[300px] overflow-hidden rounded-[16px] border text-left"
                           style={
                             {
                               "--card-distance": distance,
@@ -297,17 +310,18 @@ export function ExploreWork() {
                               "--card-opacity": state.opacity,
                               "--card-blur": `${state.blur}px`,
                               "--card-z": state.z,
+                              "--card-border": state.border,
                               "--card-glow": state.glow,
                             } as CSSProperties
                           }
                         >
-                          <div className="relative aspect-[4/5] max-h-[340px] w-full">
+                          <div className="relative aspect-[16/10] w-full">
                             <div className="absolute inset-0" style={{ background: entry.image }} />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/5 to-transparent" />
-                            <div className="absolute inset-x-0 bottom-0 p-5">
-                              <h3 className="text-lg font-semibold text-paper">{entry.title}</h3>
+                            <div className="absolute inset-x-0 bottom-0 p-4">
+                              <h3 className="font-heading text-[16px] font-bold text-paper">{entry.title}</h3>
                               {isActive && (
-                                <p className="mt-1 text-xs uppercase tracking-widest text-mute">
+                                <p className="mt-1 text-[10.5px] uppercase tracking-[0.1em] text-[#B0ACA6]">
                                   {entry.category}
                                 </p>
                               )}
@@ -453,12 +467,12 @@ function MobileRow({
   }, [reducedMotion]);
 
   return (
-    <div ref={rowRef} className="explore-scroll-row flex gap-5 px-[calc(50%-8rem)] py-4">
+    <div ref={rowRef} className="explore-scroll-row flex gap-5 px-[calc(50%-150px)] py-4">
       {CAROUSEL_PROJECTS.map((entry, index) => {
         const distance = reducedMotion ? 0 : circularDistance(index, activeIndex, CAROUSEL_PROJECTS.length);
         const isActive = distance === 0;
         const state = reducedMotion
-          ? { scale: 1, opacity: 1, blur: 0, z: 1, glow: "none" }
+          ? { scale: 1, opacity: 1, blur: 0, z: 1, border: "rgba(255,255,255,0.14)", glow: "none" }
           : cardState(distance);
         return (
           <button
@@ -472,23 +486,24 @@ function MobileRow({
             aria-label={`${entry.title} — ${entry.category}`}
             aria-current={isActive && !reducedMotion ? "true" : undefined}
             onClick={(e) => onActivate(index, e.currentTarget)}
-            className="explore-card explore-card--mobile w-64 shrink-0 overflow-hidden rounded-[20px] border border-line text-left"
+            className="explore-card explore-card--mobile w-[300px] shrink-0 overflow-hidden rounded-[16px] border text-left"
             style={
               {
                 "--card-scale": state.scale,
                 "--card-opacity": state.opacity,
                 "--card-blur": `${state.blur}px`,
+                "--card-border": state.border,
                 "--card-glow": state.glow,
               } as CSSProperties
             }
           >
-            <div className="relative aspect-[4/5] w-full">
+            <div className="relative aspect-[16/10] w-full">
               <div className="absolute inset-0" style={{ background: entry.image }} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/5 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-5">
-                <h3 className="text-lg font-semibold text-paper">{entry.title}</h3>
+              <div className="absolute inset-x-0 bottom-0 p-4">
+                <h3 className="font-heading text-[16px] font-bold text-paper">{entry.title}</h3>
                 {(isActive || reducedMotion) && (
-                  <p className="mt-1 text-xs uppercase tracking-widest text-mute">{entry.category}</p>
+                  <p className="mt-1 text-[10.5px] uppercase tracking-[0.1em] text-[#B0ACA6]">{entry.category}</p>
                 )}
               </div>
             </div>

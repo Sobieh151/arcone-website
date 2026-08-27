@@ -478,22 +478,24 @@ textarea:focus-visible,
 
 /* ------------------------------------------------------------------ */
 /* Explore Work carousel (components/portfolio/explore-work.tsx). Every
-   card's position/scale/opacity/blur/glow comes from CSS custom
+   card's position/scale/opacity/blur/border/glow comes from CSS custom
    properties set per-card from React (--card-distance, --card-scale,
-   --card-opacity, --card-blur, --card-z, --card-glow) — a discrete
-   value per active/adjacent/further-out tier, changed only when the
-   active index changes, never per-frame. The 700ms transition below is
-   what actually animates the move between tiers; nothing here runs a
-   rAF loop except the drag itself (use-carousel-drag.ts), which writes
+   --card-opacity, --card-blur, --card-z, --card-border, --card-glow) — a
+   discrete value per active/inactive tier, changed only when the active
+   index changes, never per-frame. The 700ms transition below is what
+   actually animates the move between tiers; nothing here runs a rAF loop
+   except the drag itself (use-carousel-drag.ts), which writes
    --drag-offset imperatively for zero-lag pointer tracking. */
 .explore-card {
   opacity: var(--card-opacity, 1);
   filter: blur(var(--card-blur, 0px));
+  border-color: var(--card-border, transparent);
   box-shadow: var(--card-glow, none);
   transition:
     transform 700ms var(--ease-smooth),
     opacity 700ms var(--ease-smooth),
     filter 700ms ease,
+    border-color 700ms ease,
     box-shadow 700ms ease;
   will-change: transform;
 }
@@ -508,7 +510,7 @@ textarea:focus-visible,
   top: 50%;
   transform:
     translate(-50%, -50%)
-    translateX(calc(var(--card-distance, 0) * var(--card-spacing, 236px) + var(--drag-offset, 0px)))
+    translateX(calc(var(--card-distance, 0) * var(--card-spacing, 264px) + var(--drag-offset, 0px)))
     scale(var(--card-scale, 1));
   z-index: var(--card-z, 1);
 }
