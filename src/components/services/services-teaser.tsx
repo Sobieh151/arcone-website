@@ -22,6 +22,18 @@ const CENTRE_MARK_SIZE = 176;
 const ORBIT_HALO_RX = ORBIT_RX + 20;
 const ORBIT_HALO_RY = ORBIT_RY + 18;
 
+// A full loop around the ring, as two 180deg arcs — used as an
+// `offset-path` for the travelling light (see capabilities-orbit-light
+// below) instead of animating stroke-dashoffset on a dashed stroke. This
+// is the same fix already applied once in this codebase to the hero's
+// original light trail: a small fixed-shape mark repositioned along a
+// static path via offset-distance is an ordinary transform update to the
+// browser, not a re-stroke of the path geometry every frame. It also
+// sidesteps the old dasharray/dashoffset totals (1118, "88 1030") going
+// stale the way they did when this orbit was widened — offset-distance is
+// percentage-based, so it doesn't care what the path's actual length is.
+const ORBIT_PATH_D = `M ${ORBIT_CX + ORBIT_RX} ${ORBIT_CY} A ${ORBIT_RX} ${ORBIT_RY} 0 1 1 ${ORBIT_CX - ORBIT_RX} ${ORBIT_CY} A ${ORBIT_RX} ${ORBIT_RY} 0 1 1 ${ORBIT_CX + ORBIT_RX} ${ORBIT_CY}`;
+
 // Standard ellipse parametric equations, angle in degrees. SVG's y-axis
 // grows downward, so this sweeps clockwise from the positive x-axis: 0deg
 // = right, 90deg = bottom-centre (where Web & App anchors), 180deg =
@@ -169,15 +181,10 @@ export function ServicesTeaser() {
                 {!reducedMotion && (
                   <ellipse
                     className="capabilities-orbit-light"
-                    cx={ORBIT_CX}
-                    cy={ORBIT_CY}
-                    rx={ORBIT_RX}
-                    ry={ORBIT_RY}
-                    stroke="#FFA870"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    fill="none"
-                    strokeDasharray="88 1030"
+                    rx="13"
+                    ry="1.8"
+                    fill="#FFA870"
+                    style={{ offsetPath: `path('${ORBIT_PATH_D}')`, offsetRotate: "auto" }}
                   />
                 )}
 

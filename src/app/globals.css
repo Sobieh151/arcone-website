@@ -317,6 +317,7 @@ html.lenis body {
 
 .hero-mark-sweep {
   animation: hero-mark-sweep 9s ease-in-out infinite;
+  will-change: transform;
 }
 
 /* ------------------------------------------------------------------ */
@@ -396,6 +397,14 @@ html.lenis body {
    sweeping it across to -100% 0, then hold there (visually identical to
    the parked start: the band is off-screen either way) until the next
    loop. Peak of the gradient is --paper, never pure white. */
+/* background-position, not transform — 60fps-audit note: this is a
+   background-clip: text shimmer, and the gradient has to live on this
+   same element for the clip to work at all, so there's no separate
+   layer to translate independently of the (stationary) text underneath
+   it. That rules out the usual "animate a wrapping element's transform
+   instead" fix. will-change hints the one property that's actually
+   changing; the affected repaint area is a single small text label, not
+   a large surface, so the real cost stays low regardless. */
 .trusted-label {
   background-image: linear-gradient(
     100deg,
@@ -410,6 +419,7 @@ html.lenis body {
   color: transparent;
   -webkit-text-fill-color: transparent;
   animation: trusted-label-sweep 12s ease-in-out infinite;
+  will-change: background-position;
 }
 
 @keyframes trusted-label-sweep {
@@ -486,6 +496,18 @@ textarea:focus-visible,
    actually animates the move between tiers; nothing here runs a rAF loop
    except the drag itself (use-carousel-drag.ts), which writes
    --drag-offset imperatively for zero-lag pointer tracking. */
+/* filter isn't in the transition list — 60fps-audit note: "every blur
+   must be set once statically." The blur value itself still changes
+   between tiers (0px active, 2.5px inactive), it just snaps instantly
+   on an index change instead of animating over 700ms, which was
+   re-rasterizing this card on every frame of that 700ms for a blur that
+   the transform/opacity move already sells the tier change without.
+   will-change also isn't unconditional any more — this card isn't
+   continuously animating in its resting state, only during an active
+   drag (--drag-offset changing every pointermove) or its own 700ms
+   tier transition, so a permanent will-change here just held a
+   compositor layer allocated the other ~100% of the time for nothing;
+   it's scoped to .is-dragging below instead. */
 .explore-card {
   opacity: var(--card-opacity, 1);
   filter: blur(var(--card-blur, 0px));
@@ -494,10 +516,8 @@ textarea:focus-visible,
   transition:
     transform 700ms var(--ease-smooth),
     opacity 700ms var(--ease-smooth),
-    filter 700ms ease,
     border-color 700ms ease,
     box-shadow 700ms ease;
-  will-change: transform;
 }
 
 /* Desktop: absolutely positioned on a shared center point, offset by
@@ -532,6 +552,7 @@ textarea:focus-visible,
    read as a physical object instead of a slider. */
 .explore-track.is-dragging .explore-card {
   transition: none;
+  will-change: transform;
 }
 
 .explore-scroll-row {
@@ -631,18 +652,25 @@ textarea:focus-visible,
   transition: transform 600ms var(--ease-smooth);
 }
 
-/* A light travelling the ring — same construction as the hero's original
-   light trail: a fixed-length dash (stroke-dasharray) whose offset is
-   animated all the way around a static-shaped stroke, so the browser
-   repositions it as a plain paint update rather than re-stroking the
-   path's geometry every frame. */
+/* A light travelling the ring, via offset-path/offset-distance on the
+   small ellipse itself (see ORBIT_PATH_D in the component) — not
+   stroke-dashoffset on a dashed stroke. That was this rule's original
+   implementation, and the comment here used to claim it was cheap
+   ("a plain paint update, not a re-stroke") — that claim was actually
+   just carried over, incorrectly, from the hero's *offset-path* light
+   trail; a real stroke-dashoffset animation still requires the browser to
+   recompute the dash pattern along the path every frame, the same cost
+   profile that was originally measured and fixed for the hero (see the
+   60fps-audit notes). offset-distance is what actually gets treated as a
+   transform update instead of a redraw — will-change hints that. */
 @keyframes capabilities-orbit-travel {
-  from { stroke-dashoffset: 1118; }
-  to { stroke-dashoffset: 0; }
+  from { offset-distance: 0%; }
+  to { offset-distance: 100%; }
 }
 
 .capabilities-orbit-light {
   animation: capabilities-orbit-travel 11s linear infinite;
+  will-change: transform;
 }
 
 /* Static — no animation, no reduced-motion branch needed. perspective()
@@ -691,6 +719,7 @@ textarea:focus-visible,
   width: 110%;
   height: 100%;
   animation: about-photo-pan 18s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 /* ------------------------------------------------------------------ */
@@ -703,11 +732,23 @@ textarea:focus-visible,
    first, behind the content), so a plain `~` sibling selector couldn't
    reach backwards from the button to it, but `:has()` matches upward from
    their shared section regardless of which one comes first. */
+/* filter is deliberately NOT in the transition list — animating
+   drop-shadow (a blur under the hood) over 500ms would repaint this
+   element on every frame of the hover transition; only opacity, which is
+   compositor-only, eases. The drop-shadow itself still appears/disappears
+   on hover, it just snaps instead of fading in — see the 60fps-audit
+   note: "every blur must be set once statically." will-change hints the
+   scroll-scrubbed stroke-dashoffset (driven from contact-cta.tsx via
+   GSAP ScrollTrigger, not declared here) — a genuinely compositor-only
+   equivalent for "reveal a path progressively as you scroll" doesn't
+   exist (clip-path/mask animations still require re-clipping per frame
+   too), so this is a hint, not a fix; the affected paint area is a thin
+   2.5px stroke, not a full-viewport surface, which keeps the actual cost
+   small regardless. */
 .cta-arc-draw {
   opacity: 0.75;
-  transition:
-    opacity 500ms var(--ease-smooth),
-    filter 500ms var(--ease-smooth);
+  transition: opacity 500ms var(--ease-smooth);
+  will-change: stroke-dashoffset;
 }
 
 .contact-cta:has(.cta-primary-trigger:hover, .cta-primary-trigger:focus-visible) .cta-arc-draw {

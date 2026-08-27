@@ -14,7 +14,21 @@ export default function Loader() {
   }, [done, setAppReady]);
   useEffect(() => {
     const start = Date.now();
-    const MIN = 1400;
+    // 60fps-audit note: this used to be 1400ms, but that's only the
+    // point `target` locks at 100 — `progress` still has to *lerp* up to
+    // it afterward (see LERP_RATE below), and at the old 0.08 rate that
+    // lerp alone took ~60 extra frames (~1s at 60fps) to cross the 99.5%
+    // completion check, plus the exit delay after that. Measured
+    // end-to-end (nav start to the loader's pointer-events actually
+    // going to "none", i.e. the page becoming interactive): ~3.2s — more
+    // than double the 1.5s target, and MIN was less than half of that
+    // total. Cut here; LERP_RATE and EXIT_DELAY_MS below are the other
+    // two levers that mattered at least as much.
+    const MIN = 350;
+    // Higher = fewer frames to close the gap to `target`. At 0.08 the
+    // 99.5% threshold took ~60 frames to cross; at 0.28 it's ~11.
+    const LERP_RATE = 0.28;
+    const EXIT_DELAY_MS = 120;
     let target = 0;
     let frame = 0;
     const bump = () => {
@@ -26,9 +40,9 @@ export default function Loader() {
     const loop = () => {
       bump();
       setProgress((p) => {
-        const next = p + (target - p) * 0.08;
+        const next = p + (target - p) * LERP_RATE;
         if (next > 99.5 && document.readyState === "complete") {
-          setTimeout(() => setDone(true), 400);
+          setTimeout(() => setDone(true), EXIT_DELAY_MS);
           return 100;
         }
         return next;
