@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ArcMarkGlyph } from "@/components/icons/arc-mark";
 import { mainNav } from "@/content/navigation";
 import { primaryCta } from "@/content/shared";
 import { useLenis } from "@/components/providers/smooth-scroll";
@@ -110,12 +111,8 @@ export function Nav() {
           className="mx-auto flex w-full max-w-[1400px] items-center justify-between rounded-full border border-border px-3 py-2 backdrop-blur-md"
           style={{ background: "rgba(5, 5, 5, 0.7)" }}
         >
-          <Link
-            href="/"
-            data-cursor-hover
-            className="rounded-full px-3 py-1.5 text-sm font-semibold tracking-tight text-white"
-          >
-            ARC<span className="text-orange-highlight">one</span>
+          <Link href="/" data-cursor-hover aria-label="ARCone" className="rounded-full p-1.5">
+            <ArcMarkGlyph className="h-[26px] w-[26px]" />
           </Link>
 
           <ul className="hidden items-center gap-1 md:flex">

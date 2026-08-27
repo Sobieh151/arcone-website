@@ -24,9 +24,7 @@ export function Hero() {
   // viewport-entry) motion here, a depth cue rather than a static backdrop.
   const sceneWrapRef = useRef<HTMLDivElement>(null);
 
-  const backgroundRef = useRef<SVGSVGElement>(null);
-  const mountainRef = useRef<SVGGElement>(null);
-  const trailRef = useRef<SVGGElement>(null);
+  const backgroundRef = useRef<HTMLDivElement>(null);
   const markRef = useRef<HTMLDivElement>(null);
 
   const reducedMotion = usePrefersReducedMotion();
@@ -37,10 +35,7 @@ export function Hero() {
   // finish. See app-ready.tsx.
   const reveal = reducedMotion || appReady;
 
-  useParallaxLayers(
-    { background: backgroundRef, mountain: mountainRef, lightTrail: trailRef, mark: markRef },
-    !reducedMotion
-  );
+  useParallaxLayers({ background: backgroundRef, mark: markRef }, !reducedMotion);
 
   useEffect(() => {
     if (reducedMotion || !sectionRef.current || !sceneWrapRef.current) return;
@@ -83,22 +78,16 @@ export function Hero() {
           -z-10), so visual stacking is unchanged from a flat sibling
           layout — only the scroll-linked motion is added. */}
       <div ref={sceneWrapRef} className="absolute inset-0 -z-10">
-        <HeroScene
-          backgroundRef={backgroundRef}
-          mountainRef={mountainRef}
-          trailRef={trailRef}
-          reducedMotion={reducedMotion}
-          reveal={reveal}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-ink/80" />
+        <HeroScene backgroundRef={backgroundRef} reducedMotion={reducedMotion} reveal={reveal} />
 
-        {/* ARC mark + its startup aura hook — large, right side, vertically
-            centered on desktop; upper-right and smaller on mobile, per the
-            mobile spec. Both are sized off this one shared, responsively
+        {/* ARC mark + its startup aura hook — small, sitting behind and
+            beside the headline rather than competing with it: lower-right
+            on desktop (max 320px), upper-right and smaller on mobile
+            (72px). Both are sized off this one shared, responsively
             positioned wrapper, rather than each carrying its own copy of
             the same breakpoints — the aura just blooms bigger (190%,
             centered) within it. */}
-        <div className="pointer-events-none absolute right-6 top-28 z-0 h-20 w-20 sm:right-10 sm:top-32 sm:h-28 sm:w-28 md:right-[6vw] md:top-1/2 md:h-[26vw] md:max-h-[420px] md:w-[26vw] md:max-w-[420px] md:-translate-y-1/2">
+        <div className="pointer-events-none absolute right-6 top-28 z-0 h-[72px] w-[72px] md:right-[4vw] md:top-[75%] md:h-[26vw] md:max-h-[320px] md:w-[26vw] md:max-w-[320px] md:-translate-y-1/2">
           <AuraHook
             reducedMotion={reducedMotion}
             reveal={reveal}
@@ -115,7 +104,7 @@ export function Hero() {
 
       <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-6 py-32 sm:px-10 lg:px-16">
         {reducedMotion ? (
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-arc">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#FF7A2E]">
             {hero.eyebrow}
           </span>
         ) : (
@@ -127,13 +116,16 @@ export function Hero() {
               duration: heroSequence.eyebrow.duration,
               ease: heroEase,
             }}
-            className="font-mono text-xs uppercase tracking-[0.2em] text-arc"
+            className="font-mono text-xs uppercase tracking-[0.2em] text-[#FF7A2E]"
           >
             {hero.eyebrow}
           </motion.span>
         )}
 
-        <h1 className="mt-6 max-w-3xl font-heading text-[clamp(2.75rem,9vw,5.5rem)] font-extrabold uppercase leading-[0.86] tracking-[-0.045em] text-paper">
+        <h1
+          className="mt-6 max-w-3xl font-heading text-[clamp(2.75rem,9vw,5.5rem)] font-extrabold uppercase leading-[0.86] tracking-[-0.045em] text-paper"
+          style={{ textShadow: "0 2px 24px rgba(0,0,0,0.85)" }}
+        >
           {hero.headline.map((line, i) => (
             <span key={line.text} className="block overflow-hidden pb-1">
               {reducedMotion ? (
@@ -158,11 +150,17 @@ export function Hero() {
         </h1>
 
         {reducedMotion ? (
-          <p className="mt-8 max-w-[28ch] text-base text-paper/65 sm:text-lg">{hero.subhead}</p>
+          <p
+            className="mt-8 max-w-[42ch] text-base text-paper/65 sm:text-lg"
+            style={{ textShadow: "0 2px 24px rgba(0,0,0,0.85)" }}
+          >
+            {hero.subhead}
+          </p>
         ) : (
           <motion.p
             {...heroFadeIn(heroSequence.subhead, reveal)}
-            className="mt-8 max-w-[28ch] text-base text-paper/65 sm:text-lg"
+            className="mt-8 max-w-[42ch] text-base text-paper/65 sm:text-lg"
+            style={{ textShadow: "0 2px 24px rgba(0,0,0,0.85)" }}
           >
             {hero.subhead}
           </motion.p>

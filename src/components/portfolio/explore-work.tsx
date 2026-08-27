@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft, ArrowRight, ArrowUpRight, MousePointer2 } from "lucide-react";
 import { Reveal } from "@/components/animations/reveal";
 import { MaskReveal } from "@/components/animations/mask-reveal";
 import { Button } from "@/components/buttons/button";
@@ -16,26 +16,25 @@ import { projects as caseStudies } from "@/data/projects";
 import { cn } from "@/lib/utils";
 
 function placeholderArt(color: string) {
-  return `radial-gradient(circle at 30% 30%, ${color}55, transparent 65%), linear-gradient(160deg, #0d0d0d, #000)`;
+  return `radial-gradient(circle at 30% 25%, ${color}66, transparent 60%), linear-gradient(160deg, #452B1B, #120A06)`;
 }
 
-type CarouselProject = { title: string; category: string; image: string; href: string };
+type CarouselProject = { slug: string; title: string; category: string; image: string; href: string };
 
 // Homepage teaser list — placeholders pending the real, ordered client
 // roster (the whole portfolio is fictional case studies for now; see the
 // TODO at the top of data/projects.ts). `image` holds a generated
 // placeholder gradient standing in for real photography — swap for a
-// `background-image: url(...)` once real photos exist, nothing else
-// here needs to change. The first four titles match data/projects.ts's
-// case studies, so those cards open the real project modal on click; the
-// fifth has no case study behind it yet and just links out to /work,
-// same as the "View All Work" button.
+// `background-image: url(...)` once real photos exist, nothing else here
+// needs to change. Every slug below matches a real entry in
+// data/projects.ts, so every card opens the real project modal on click
+// (see `activate`) — `href` only ever serves as a fallback if a slug here
+// and in data/projects.ts ever drift apart.
 const CAROUSEL_PROJECTS: CarouselProject[] = [
-  { title: "North Atlas", category: "Branding", image: placeholderArt("#E85002"), href: "/work" },
-  { title: "Fielder", category: "Web & App", image: placeholderArt("#FF6001"), href: "/work" },
-  { title: "Marrow", category: "Media & Activations", image: placeholderArt("#C13001"), href: "/work" },
-  { title: "Harbor & Co.", category: "Digital Marketing", image: placeholderArt("#9C3F0B"), href: "/work" },
-  { title: "More Work Soon", category: "[[ Category ]]", image: placeholderArt("#6f6d6a"), href: "/work" },
+  { slug: "north-atlas", title: "North Atlas", category: "Branding", image: placeholderArt("#E85002"), href: "/work" },
+  { slug: "fielder", title: "Fielder", category: "Web & App", image: placeholderArt("#FF6001"), href: "/work" },
+  { slug: "marrow", title: "Marrow", category: "Media & Activations", image: placeholderArt("#C13001"), href: "/work" },
+  { slug: "harbor-co", title: "Harbor & Co.", category: "Digital Marketing", image: placeholderArt("#9C3F0B"), href: "/work" },
 ];
 
 // Visual state per ring — active / adjacent / further-out, exactly the
@@ -54,12 +53,63 @@ function cardState(distance: number) {
   return { scale: 0.8, opacity: 0.12, blur: 2, z: Math.max(1, 10 - abs), glow: "none" };
 }
 
+const WORK_HINT_SESSION_KEY = "arcone-work-hint";
+const WORK_HINT_APPEAR_DELAY_MS = 1100;
+const WORK_HINT_AUTO_DISMISS_MS = 7000;
+
+/**
+ * One-time "click to explore" affordance: nobody discovers the drag on
+ * their own, so this nudges toward the right-hand adjacent card the
+ * first time the carousel scrolls into view, then gets out of the way
+ * for good. Gated on sessionStorage (shows once per session, set the
+ * moment it actually appears — not merely when it's scheduled, so a
+ * visitor who scrolls past without lingering still sees it next time)
+ * and on `enabled`, which the caller ties to reduced-motion/touch — see
+ * `hintEnabled` in ExploreWork.
+ */
+function useWorkHint(enabled: boolean) {
+  const [visible, setVisible] = useState(false);
+  const hasScheduledRef = useRef(false);
+  const showTimerRef = useRef<number | undefined>(undefined);
+  const dismissTimerRef = useRef<number | undefined>(undefined);
+
+  const dismiss = useCallback(() => {
+    setVisible(false);
+    window.clearTimeout(showTimerRef.current);
+    window.clearTimeout(dismissTimerRef.current);
+  }, []);
+
+  const onFirstView = useCallback(() => {
+    if (!enabled || hasScheduledRef.current) return;
+    if (sessionStorage.getItem(WORK_HINT_SESSION_KEY)) return;
+    hasScheduledRef.current = true;
+    showTimerRef.current = window.setTimeout(() => {
+      setVisible(true);
+      sessionStorage.setItem(WORK_HINT_SESSION_KEY, "1");
+      dismissTimerRef.current = window.setTimeout(dismiss, WORK_HINT_AUTO_DISMISS_MS);
+    }, WORK_HINT_APPEAR_DELAY_MS);
+  }, [enabled, dismiss]);
+
+  // Unmounting mid-delay (a fast scroll-past-then-away) shouldn't fire a
+  // setState after the component's gone.
+  useEffect(() => {
+    return () => {
+      window.clearTimeout(showTimerRef.current);
+      window.clearTimeout(dismissTimerRef.current);
+    };
+  }, []);
+
+  return { visible, onFirstView, dismiss };
+}
+
 export function ExploreWork() {
   const reducedMotion = usePrefersReducedMotion();
   const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const length = CAROUSEL_PROJECTS.length;
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   const { project: modalProject, open: openModal, close: closeModal } = useProjectModal();
 
@@ -72,7 +122,51 @@ export function ExploreWork() {
     return () => query.removeEventListener("change", onChange);
   }, []);
 
-  const advance = (step: number) => setActiveIndex((i) => wrapIndex(i + step, length));
+  useEffect(() => {
+    const query = window.matchMedia("(hover: hover) and (pointer: fine)");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsTouchDevice(!query.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsTouchDevice(!e.matches);
+    query.addEventListener("change", onChange);
+    return () => query.removeEventListener("change", onChange);
+  }, []);
+
+  // Redundant with the branch this only ever renders in (reducedMotion and
+  // isMobile both gate the native-scroll fallback below), but spelled out
+  // explicitly here anyway per the hint's own rule: never under reduced
+  // motion, never on a touch device.
+  const hintEnabled = !reducedMotion && !isTouchDevice;
+  // Destructured, not kept as a `hint.X` object — same reasoning as
+  // `useCarouselDrag`'s call site below: a fresh object every render
+  // would otherwise churn the effect/callback dependency arrays below.
+  const { visible: hintVisible, onFirstView: hintOnFirstView, dismiss: hintDismiss } = useWorkHint(hintEnabled);
+
+  useEffect(() => {
+    if (!hintEnabled) return;
+    const el = carouselRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          hintOnFirstView();
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hintEnabled, hintOnFirstView]);
+
+  const advance = (step: number) => {
+    hintDismiss();
+    setActiveIndex((i) => wrapIndex(i + step, length));
+  };
+
+  const jumpTo = (index: number) => {
+    hintDismiss();
+    setActiveIndex(index);
+  };
 
   // Destructured, not kept as a `drag.X` object — eslint's
   // react-hooks/refs rule flags property access into an object carrying
@@ -92,13 +186,14 @@ export function ExploreWork() {
   });
 
   const activate = (index: number, trigger: HTMLElement) => {
+    hintDismiss();
     if (consumeJustDragged()) return;
     if (index !== activeIndex) {
       setActiveIndex(index);
       return;
     }
     const entry = CAROUSEL_PROJECTS[index];
-    const match = caseStudies.find((p) => p.name === entry.title);
+    const match = caseStudies.find((p) => p.slug === entry.slug);
     if (match) {
       openModal(match, trigger);
     } else {
@@ -109,7 +204,7 @@ export function ExploreWork() {
   const useNativeScroll = reducedMotion || isMobile;
 
   return (
-    <section className="relative overflow-hidden border-t border-line bg-ink py-28">
+    <section className="relative overflow-hidden border-t border-line bg-ink py-20">
       <div className="mx-auto max-w-7xl px-6 sm:px-10">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,280px)_1fr] lg:items-center lg:gap-8">
           {/* Left column */}
@@ -128,7 +223,7 @@ export function ExploreWork() {
               [[ Explore Our Work — one to two sentence supporting line ]]
             </MaskReveal>
             <Reveal delay={0.12}>
-              <Magnetic strength={0.3} className="mt-8 inline-flex">
+              <Magnetic strength={0.3} className="mt-6 inline-flex">
                 <Button href="/work" variant="secondary" icon={<ArrowUpRight size={15} className="text-arc" />}>
                   View All Work
                 </Button>
@@ -137,28 +232,28 @@ export function ExploreWork() {
           </div>
 
           {/* Carousel */}
-          <div className="relative">
+          <div ref={carouselRef} className="relative">
             {useNativeScroll ? (
               <MobileRow
                 reducedMotion={reducedMotion}
                 onActivate={(index, trigger) => {
                   const entry = CAROUSEL_PROJECTS[index];
-                  const match = caseStudies.find((p) => p.name === entry.title);
+                  const match = caseStudies.find((p) => p.slug === entry.slug);
                   if (match) openModal(match, trigger);
                   else router.push(entry.href);
                 }}
               />
             ) : (
               <>
-                <div className="flex items-center justify-center gap-5">
+                <div className="flex items-center justify-center gap-[14px]">
                   <button
                     type="button"
                     data-cursor-hover
                     aria-label="Previous project"
                     onClick={() => advance(-1)}
-                    className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full border border-line text-arc transition-colors hover:border-arc"
+                    className="grid h-10 w-10 flex-none place-items-center rounded-full border border-[#4A4A4A] text-arc transition-colors hover:border-arc hover:bg-[rgba(255,90,26,0.12)]"
                   >
-                    <ArrowLeft size={14} />
+                    <ArrowLeft size={16} />
                   </button>
 
                   <div
@@ -167,16 +262,19 @@ export function ExploreWork() {
                     aria-roledescription="carousel"
                     aria-label="Selected work"
                     tabIndex={0}
-                    onPointerDown={onPointerDown}
+                    onPointerDown={(e) => {
+                      hintDismiss();
+                      onPointerDown(e);
+                    }}
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
                     onPointerCancel={onPointerCancel}
                     onKeyDown={onKeyDown}
                     className={cn(
-                      "explore-track relative h-[380px] w-full max-w-xl touch-pan-y select-none overflow-hidden sm:h-[420px]",
+                      "explore-track relative h-[360px] w-full max-w-xl touch-pan-y select-none overflow-hidden",
                       isDragging && "is-dragging"
                     )}
-                    style={{ "--card-spacing": "230px" } as CSSProperties}
+                    style={{ "--card-spacing": "236px" } as CSSProperties}
                   >
                     {CAROUSEL_PROJECTS.map((entry, index) => {
                       const distance = circularDistance(index, activeIndex, length);
@@ -184,14 +282,14 @@ export function ExploreWork() {
                       const state = cardState(distance);
                       return (
                         <button
-                          key={entry.title}
+                          key={entry.slug}
                           type="button"
                           data-cursor-hover
                           aria-label={`${entry.title} — ${entry.category}`}
                           aria-current={isActive ? "true" : undefined}
-                          tabIndex={Math.abs(distance) > 2 ? -1 : 0}
+                          tabIndex={Math.abs(distance) > 1 ? -1 : 0}
                           onClick={(e) => activate(index, e.currentTarget)}
-                          className="explore-card explore-card--desktop group w-64 overflow-hidden rounded-3xl border border-line text-left sm:w-72"
+                          className="explore-card explore-card--desktop group w-[260px] overflow-hidden rounded-[20px] border border-line text-left"
                           style={
                             {
                               "--card-distance": distance,
@@ -203,9 +301,9 @@ export function ExploreWork() {
                             } as CSSProperties
                           }
                         >
-                          <div className="relative aspect-[4/5] w-full">
+                          <div className="relative aspect-[4/5] max-h-[340px] w-full">
                             <div className="absolute inset-0" style={{ background: entry.image }} />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/5 to-transparent" />
                             <div className="absolute inset-x-0 bottom-0 p-5">
                               <h3 className="text-lg font-semibold text-paper">{entry.title}</h3>
                               {isActive && (
@@ -218,6 +316,30 @@ export function ExploreWork() {
                         </button>
                       );
                     })}
+
+                    {/* First-visit hint — over the right-hand adjacent
+                        card, gone the instant the carousel's touched. */}
+                    <AnimatePresence>
+                      {hintVisible && (
+                        <motion.div
+                          key="work-hint"
+                          aria-hidden="true"
+                          className="pointer-events-none absolute z-40 -translate-x-1/2 -translate-y-1/2"
+                          style={{ left: "76%", top: "52%" }}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                        >
+                          <div className="work-hint-nudge flex items-center gap-2">
+                            <MousePointer2 size={18} className="text-arc" />
+                            <span className="whitespace-nowrap rounded-full border border-line bg-ink/85 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-paper backdrop-blur-sm">
+                              Click to explore
+                            </span>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                   <button
@@ -225,14 +347,38 @@ export function ExploreWork() {
                     data-cursor-hover
                     aria-label="Next project"
                     onClick={() => advance(1)}
-                    className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full border border-line text-arc transition-colors hover:border-arc"
+                    className="grid h-10 w-10 flex-none place-items-center rounded-full border border-[#4A4A4A] text-arc transition-colors hover:border-arc hover:bg-[rgba(255,90,26,0.12)]"
                   >
-                    <ArrowRight size={14} />
+                    <ArrowRight size={16} />
                   </button>
                 </div>
 
+                {/* Dot indicators — one per project, active dot stretched
+                    and lit; each is its own jump-to-index button. */}
+                <div className="mt-[18px] flex items-center justify-center gap-2">
+                  {CAROUSEL_PROJECTS.map((entry, index) => {
+                    const isActive = index === activeIndex;
+                    return (
+                      <button
+                        key={entry.slug}
+                        type="button"
+                        data-cursor-hover
+                        aria-label={`Go to ${entry.title}`}
+                        aria-current={isActive ? "true" : undefined}
+                        onClick={() => jumpTo(index)}
+                        className="h-[7px] rounded-full"
+                        style={{
+                          width: isActive ? "22px" : "7px",
+                          backgroundColor: isActive ? "var(--arc)" : "#565656",
+                          transition: "width 400ms var(--ease-smooth), background-color 400ms var(--ease-smooth)",
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+
                 <p className="mt-6 text-center font-mono text-[9px] uppercase tracking-[0.16em] text-mute">
-                  Drag to Explore
+                  Click a card to focus
                 </p>
               </>
             )}
@@ -316,7 +462,7 @@ function MobileRow({
           : cardState(distance);
         return (
           <button
-            key={entry.title}
+            key={entry.slug}
             ref={(el) => {
               cardRefs.current[index] = el;
             }}
@@ -326,7 +472,7 @@ function MobileRow({
             aria-label={`${entry.title} — ${entry.category}`}
             aria-current={isActive && !reducedMotion ? "true" : undefined}
             onClick={(e) => onActivate(index, e.currentTarget)}
-            className="explore-card explore-card--mobile w-64 shrink-0 overflow-hidden rounded-3xl border border-line text-left"
+            className="explore-card explore-card--mobile w-64 shrink-0 overflow-hidden rounded-[20px] border border-line text-left"
             style={
               {
                 "--card-scale": state.scale,
@@ -338,7 +484,7 @@ function MobileRow({
           >
             <div className="relative aspect-[4/5] w-full">
               <div className="absolute inset-0" style={{ background: entry.image }} />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/5 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-5">
                 <h3 className="text-lg font-semibold text-paper">{entry.title}</h3>
                 {(isActive || reducedMotion) && (

@@ -1,90 +1,29 @@
 "use client";
 
 import { forwardRef } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { heroEase, heroSequence } from "@/animations/hero";
+import {
+  ARC_MARK_BAR_OUTLINE,
+  ARC_MARK_ROTATIONS,
+  ARC_MARK_VIEWBOX,
+} from "@/components/icons/arc-mark";
 
-// No photo asset exists for the "dark mountain landscape" the brief
-// describes, and the performance budget rules out anything heavier
-// (WebGL, video, a large raster still) anyway — so the backdrop is an
-// illustrated SVG scene instead: a few KB, infinitely crisp, and every
-// color already comes from the live design tokens instead of being baked
-// into a bitmap. Swap this file for an <img>-based layer later if a real
-// photograph shows up; hero.tsx's refs/parallax wiring doesn't care which
-// one is behind them.
-
-export const HeroMountains = forwardRef<SVGGElement, { className?: string }>(
-  function HeroMountains({ className }, ref) {
-    return (
-      <g ref={ref} className={className}>
-        {/* Far ridge — low, dim, spans the full width */}
-        <polygon
-          points="-10,78 8,66 22,72 38,58 55,68 72,55 88,64 100,60 110,66 110,110 -10,110"
-          fill="var(--ink-soft)"
-          opacity="0.7"
-        />
-        {/* Near ridge — bottom-right weighted, taller/darker/closer */}
-        <polygon
-          points="-10,95 15,90 30,80 42,86 58,68 68,74 78,52 90,60 100,48 110,58 110,110 -10,110"
-          fill="#020202"
-        />
-      </g>
-    );
-  }
-);
-
-export const HeroLightTrail = forwardRef<SVGGElement, { className?: string }>(
-  function HeroLightTrail({ className }, ref) {
-    return (
-      <g ref={ref} className={className}>
-        {/* Long-exposure base line — always visible, dim */}
-        <path
-          d="M -10,72 C 20,30 46,88 68,32 S 92,8 112,18"
-          fill="none"
-          stroke="var(--arc)"
-          strokeOpacity="0.2"
-          strokeWidth="0.45"
-          strokeLinecap="round"
-        />
-        {/* Bright traveling segment. Originally an animated
-            stroke-dashoffset on a copy of the path above — measured (via
-            a CDP trace) as ~70% of this page's entire idle rasterization
-            cost: animating dashoffset makes the browser re-stroke the
-            whole path's geometry every single frame, which is genuinely
-            expensive, not just "a filter is on it" (a same-shaped CSS
-            `filter: blur()` swap alone barely moved the number). Replaced
-            with `offset-path`/`offset-distance`: a small, fixed-shape
-            ellipse repositioned along the *same* path string via what the
-            browser treats as an ordinary transform update, not a redraw —
-            confirmed back down to baseline raster cost. `offset-rotate:
-            auto` keeps its long axis tangent to the curve as it travels,
-            so it still reads as a short streak, not a dot. */}
-        <ellipse
-          className="hero-trail-bright"
-          rx="3.2"
-          ry="0.45"
-          fill="var(--arc-bright)"
-          style={{
-            offsetPath: "path('M -10,72 C 20,30 46,88 68,32 S 92,8 112,18')",
-            offsetRotate: "auto",
-            filter: "blur(1.2px)",
-          }}
-        />
-      </g>
-    );
-  }
-);
+// Tiny 8x8 solid-tone PNG (ink fading toward a warm ember) used as the
+// LCP image's blur-up placeholder while /public/hero.jpg downloads —
+// hero.jpg is a remote/dynamic src as far as next/image is concerned (not
+// a static import), so Next can't derive this automatically the way it
+// would for an imported asset; see the next/image docs on blurDataURL.
+const HERO_IMAGE_BLUR_DATA_URL =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAANElEQVR4nGNgxQEYuDnYsCIGAS4OrIhBjJcTK2KQ4efGihiUhHiwIgZ1ET4siEFXnB8rAgCO9QxBdmsGAQAAAABJRU5ErkJggg==";
 
 export function HeroScene({
   backgroundRef,
-  mountainRef,
-  trailRef,
   reducedMotion,
   reveal,
 }: {
-  backgroundRef: React.RefObject<SVGSVGElement | null>;
-  mountainRef: React.RefObject<SVGGElement | null>;
-  trailRef: React.RefObject<SVGGElement | null>;
+  backgroundRef: React.RefObject<HTMLDivElement | null>;
   reducedMotion: boolean;
   /** True once it's actually time to play the entrance — see
    * useAppReady (components/providers/app-ready.tsx). Gates `animate`
@@ -94,70 +33,23 @@ export function HeroScene({
   reveal: boolean;
 }) {
   return (
-    <svg
-      ref={backgroundRef}
-      viewBox="0 0 100 100"
-      preserveAspectRatio="xMaxYMax slice"
-      className="absolute inset-0 h-full w-full"
-      aria-hidden="true"
-    >
-      <defs>
-        <linearGradient id="hero-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--ink)" />
-          <stop offset="100%" stopColor="var(--ink-soft)" />
-        </linearGradient>
-        {/* Blur is CSS `filter: blur()` at each element (see the notes
-            there), not SVG-native <feGaussianBlur> — the latter is much
-            more expensive to keep composited, especially under a running
-            CSS animation. No <filter> defs needed here any more. */}
-        <radialGradient id="hero-glow-radial" cx="78%" cy="62%" r="55%">
-          <stop offset="0%" stopColor="var(--arc)" stopOpacity="0.22" />
-          <stop offset="45%" stopColor="var(--arc)" stopOpacity="0.06" />
-          <stop offset="100%" stopColor="var(--arc)" stopOpacity="0" />
-        </radialGradient>
-      </defs>
+    <>
+      {/* Solid --ink sits behind the photo permanently (not part of the
+          fade below) so nothing flashes while hero.jpg is still
+          downloading, independent of whether the entrance has played. */}
+      <div className="absolute inset-0 bg-ink" />
 
-      <rect width="100" height="100" fill="url(#hero-sky)" />
-
-      {/* Beat 1 (t=0): "a small orange glow appears in the environment" —
-          a light source, not a fill, so it's a soft radial that fades in
-          on its own, ahead of everything else. */}
-      <motion.rect
-        // `usePrefersReducedMotion` is deliberately `false` on the very
-        // first render (it only knows the real value post-mount, to avoid
-        // an SSR hydration mismatch — see the hook itself). Framer Motion
-        // only ever reads `initial` once, at mount (it's captured via
-        // `useConstant` internally), so without this key a reduced-motion
-        // user would still get the full opacity animation: the element
-        // mounts before `reducedMotion` flips true, `initial` is
-        // permanently resolved to `{ opacity: 0 }`, and the later prop
-        // change is silently ignored. Keying on `reducedMotion` forces a
-        // remount when it flips, so `initial` gets re-evaluated correctly.
-        key={`glow-${reducedMotion ? "reduced" : "motion"}`}
-        width="100"
-        height="100"
-        initial={reducedMotion ? false : { opacity: 0 }}
-        animate={{ opacity: reveal ? 1 : 0 }}
-        transition={{
-          delay: heroSequence.glow.delay,
-          duration: heroSequence.glow.duration,
-          ease: heroEase,
-        }}
-        fill="url(#hero-glow-radial)"
-      />
-
-      {/* Beat 2 (t=0.5s): "background fades up from darkness" — haze,
-          mountains and the light trail arrive together as one layer. The
-          mountain/trail <g>s below carry their own refs for the mouse
-          parallax (imperative style.transform writes); this wrapper only
-          ever touches opacity, so the two never fight over the same CSS
-          property. */}
-      <motion.g
-        // See the `key` comment on the glow `motion.rect` above — same
-        // stale-`initial` pitfall, same fix. Prefixed (unlike that one)
-        // because these two are siblings under the same <svg>: React
-        // requires unique keys among siblings, not just per-component.
+      {/* Beat 2 (t=0.5s) of the original load sequence — "background
+          fades up from darkness" — now applied to the photo + its
+          overlays instead of the old SVG haze/mountains layer. Same
+          `key`-on-reducedMotion fix as everywhere else in this file: an
+          `initial` object is only ever read once, at mount, and
+          `reducedMotion` is `false` on the very first render by design
+          (SSR-safe default), so without the key a reduced-motion user
+          would still get the fade baked in from that stale first read. */}
+      <motion.div
         key={`bg-${reducedMotion ? "reduced" : "motion"}`}
+        className="absolute inset-0"
         initial={reducedMotion ? false : { opacity: 0 }}
         animate={{ opacity: reveal ? 1 : 0 }}
         transition={{
@@ -166,45 +58,45 @@ export function HeroScene({
           ease: heroEase,
         }}
       >
-        <g className="hero-haze">
-          <ellipse
-            cx="60"
-            cy="58"
-            rx="42"
-            ry="14"
-            fill="var(--paper)"
-            opacity="0.035"
-            style={{ filter: "blur(12px)" }}
+        {/* The mouse-parallax "image" layer (1x, see use-parallax-layers.ts) —
+            only the photo itself moves; the scrim/vignette below stay put
+            so the text above them never loses contrast as the photo drifts. */}
+        <div ref={backgroundRef} className="absolute inset-0">
+          <Image
+            src="/hero.jpg"
+            alt=""
+            fill
+            preload
+            sizes="100vw"
+            className="object-cover"
+            placeholder="blur"
+            blurDataURL={HERO_IMAGE_BLUR_DATA_URL}
           />
-        </g>
+        </div>
 
-        <HeroLightTrail ref={trailRef} />
-        <HeroMountains ref={mountainRef} />
+        {/* Left-to-right scrim — what makes the headline legible over a
+            lit photograph instead of a flat dark illustration. */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to right, rgba(5,5,5,0.95) 0%, rgba(5,5,5,0.70) 44%, rgba(5,5,5,0) 100%)",
+          }}
+        />
 
-        {/* Subtle color-grade darkening. Was `fill="url(#hero-sky)"
-            opacity="0.15" style={{mixBlendMode: "multiply"}}` — measured
-            (via a CDP trace during scroll) as the single largest
-            contributor to scroll jank on this page: 461ms worst-frame,
-            ~31fps average, dropping to 80ms/~52fps with just this one
-            change. `mix-blend-mode` forces a genuine per-pixel blend
-            against everything underneath on every repaint, and this
-            layer sits inside the GSAP scroll-scrub `scale` animation
-            (hero.tsx), so it was recomputing on every scroll tick. A
-            plain alpha-composited dark rect reads as essentially the
-            same subtle grading without that cost — ordinary compositing,
-            not a per-frame blend. */}
-        <rect width="100" height="100" fill="var(--ink)" opacity="0.12" />
-      </motion.g>
-    </svg>
+        {/* Vertical vignette — darkens the top (nav legibility) and the
+            bottom (CTA row) while leaving the photo's midtones clearest. */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(5,5,5,0.50) 0%, rgba(5,5,5,0) 45%, rgba(5,5,5,0.82) 100%)",
+          }}
+        />
+      </motion.div>
+    </>
   );
 }
-
-// Six-point mark: 3 tapered petals mirrored to 6, rotated 60deg apart —
-// the same construction as a sparkle/asterisk glyph. Its own small,
-// fixed-aspect SVG (not folded into the stretched 0-100 scene above) so
-// it never distorts.
-const PETAL_D = "M0,0 L6,-16 L0,-52 L-6,-16 Z";
-const PETAL_ANGLES = [0, 60, 120, 180, 240, 300];
 
 export const ArcMark = forwardRef<
   HTMLDivElement,
@@ -213,13 +105,13 @@ export const ArcMark = forwardRef<
   return (
     <div ref={ref} className={className}>
       <motion.svg
-        // See the `key` comment on HeroScene's glow `motion.rect` — same
+        // See the `key` comment on HeroScene's fade `motion.div` above — same
         // stale-`initial` pitfall, same fix: without this, a real
         // reduced-motion user still gets the full scale/opacity entrance
         // because `initial` is only ever read at mount, before
         // `reducedMotion` has flipped from its SSR-safe `false` default.
         key={reducedMotion ? "reduced" : "motion"}
-        viewBox="-60 -60 120 120"
+        viewBox={ARC_MARK_VIEWBOX}
         className="h-full w-full overflow-visible"
         role="img"
         aria-label="ARCone mark"
@@ -233,8 +125,12 @@ export const ArcMark = forwardRef<
       >
         <defs>
           <clipPath id="hero-mark-clip">
-            {PETAL_ANGLES.map((deg) => (
-              <path key={deg} d={PETAL_D} transform={`rotate(${deg})`} />
+            {ARC_MARK_ROTATIONS.map((deg) => (
+              <polygon
+                key={deg}
+                points={ARC_MARK_BAR_OUTLINE}
+                transform={deg ? `rotate(${deg} 100 100)` : undefined}
+              />
             ))}
           </clipPath>
           <linearGradient id="hero-mark-sweep-grad" x1="0" y1="0" x2="1" y2="0.3">
@@ -245,28 +141,31 @@ export const ArcMark = forwardRef<
         </defs>
 
         {/* Soft glow, behind the mark, opacity-pulsing. CSS filter, not
-            SVG <feGaussianBlur> — see the note on the light trail's
-            equivalent swap; this one's `.hero-mark-glow` opacity keyframe
-            animation was one of the ones actually costing frame budget. */}
+            SVG <feGaussianBlur> — cheaper to keep composited under a
+            running animation. Solid-fill silhouettes of the three bars,
+            not the two-face bevel, since a blurred gradient buys nothing
+            here. */}
         <g className="hero-mark-glow" style={{ filter: "blur(12px)" }}>
-          {PETAL_ANGLES.map((deg) => (
-            <path key={deg} d={PETAL_D} transform={`rotate(${deg})`} fill="var(--arc)" />
+          {ARC_MARK_ROTATIONS.map((deg) => (
+            <polygon
+              key={deg}
+              points={ARC_MARK_BAR_OUTLINE}
+              transform={deg ? `rotate(${deg} 100 100)` : undefined}
+              fill="var(--arc)"
+            />
           ))}
         </g>
 
-        {/* The mark itself */}
-        <g>
-          {PETAL_ANGLES.map((deg) => (
-            <path key={deg} d={PETAL_D} transform={`rotate(${deg})`} fill="var(--arc)" />
-          ))}
-        </g>
+        {/* The mark itself — the one shared definition (components/icons/
+            arc-mark.tsx), referenced here instead of redrawn. */}
+        <use href="#arc-mark" />
 
         {/* Occasional light sweep, clipped to the mark's own silhouette */}
         <rect
-          x="-70"
-          y="-70"
-          width="40"
-          height="140"
+          x="-115"
+          y="-115"
+          width="70"
+          height="230"
           fill="url(#hero-mark-sweep-grad)"
           clipPath="url(#hero-mark-clip)"
           className="hero-mark-sweep"
@@ -319,7 +218,10 @@ export function AuraHook({
       className={className}
       style={{
         background: "radial-gradient(circle, var(--arc), transparent 70%)",
-        filter: "blur(60px)",
+        // Reduced from blur(60px) — the mark itself is smaller and sits
+        // further off-centre now, so the same radius read as an oversized
+        // halo competing with the headline.
+        filter: "blur(40px)",
       }}
       initial={{ opacity: 0, scale: 0.55 }}
       animate={

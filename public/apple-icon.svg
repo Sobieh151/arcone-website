@@ -1,4 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
   <rect width="100%" height="100%" fill="#000" rx="18"/>
-  <circle cx="90" cy="90" r="36" fill="#E85002"/>
+  <svg x="27" y="27" width="126" height="126" viewBox="0 0 200 200">
+    <defs>
+      <linearGradient id="arc-mark-fL" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FFC421"/>
+        <stop offset="55%" stop-color="#FF8A0A"/>
+        <stop offset="100%" stop-color="#FF6A00"/>
+      </linearGradient>
+      <linearGradient id="arc-mark-fR" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FF6E00"/>
+        <stop offset="60%" stop-color="#F04A00"/>
+        <stop offset="100%" stop-color="#D93400"/>
+      </linearGradient>
+    </defs>
+    <g transform="rotate(60 100 100)">
+      <polygon points="86,22 100,15 100,185 86,192" fill="url(#arc-mark-fL)"/>
+      <polygon points="100,15 114,8 114,178 100,185" fill="url(#arc-mark-fR)"/>
+    </g>
+    <g transform="rotate(120 100 100)">
+      <polygon points="86,22 100,15 100,185 86,192" fill="url(#arc-mark-fL)"/>
+      <polygon points="100,15 114,8 114,178 100,185" fill="url(#arc-mark-fR)"/>
+    </g>
+    <polygon points="100,86 114,79 114,121 100,128 86,121 86,79" fill="#5E1D02"/>
+    <g>
+      <polygon points="86,22 100,15 100,185 86,192" fill="url(#arc-mark-fL)"/>
+      <polygon points="100,15 114,8 114,178 100,185" fill="url(#arc-mark-fR)"/>
+    </g>
+  </svg>
 </svg>

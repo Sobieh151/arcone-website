@@ -10,6 +10,7 @@ import { Nav } from "@/components/layout/nav";
 import { Footer } from "@/components/layout/footer";
 import { siteConfig } from "@/content/seo";
 import { socialLinks } from "@/content/navigation";
+import { ArcMarkSprite } from "@/components/icons/arc-mark";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -75,6 +76,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} ${archivo.variable} h-full`}>
       <body className="flex min-h-full flex-col bg-bg antialiased">
+        {/* Defines #arc-mark once so every <use href="#arc-mark"> on the
+            page (nav, hero) resolves — see components/icons/arc-mark.tsx. */}
+        <ArcMarkSprite />
         {/* One shared provider: Loader calls useSetAppReady() to report
             its own completion outward, Nav and the homepage Hero call
             useAppReady() to time their entrances off that instead of

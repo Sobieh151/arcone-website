@@ -1,0 +1,141 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { Reveal } from "@/components/animations/reveal";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
+import { resultsStats, resultsStatsArePlaceholder, type ResultStat } from "@/content/home";
+
+// Spelled out for screen readers — "240 percent Average ROAS", not "240 %
+// Average ROAS" — see `spokenPhrase` below.
+const SUFFIX_WORDS: Record<string, string> = { "%": "percent", "+": "plus", M: "million" };
+
+function formatStat(current: number, stat: ResultStat) {
+  return `${current.toFixed(stat.decimals)}${stat.suffix}`;
+}
+
+function spokenPhrase(stat: ResultStat) {
+  const word = SUFFIX_WORDS[stat.suffix] ?? stat.suffix;
+  return `${stat.value.toFixed(stat.decimals)} ${word} ${stat.label}`;
+}
+
+/**
+ * One shared rAF loop for all four stats, not four independent ones — that
+ * single shared `start` timestamp is what actually guarantees "all four
+ * begin on the same frame." Each stat computes its own progress against
+ * its own `durationMs`, so despite starting together they land in
+ * sequence: shortest duration first, longest last (see resultsStats'
+ * doc comment in content/home.ts for why that reads left-to-right).
+ *
+ * `skip` (prefers-reduced-motion) jumps straight to final values with no
+ * rAF loop at all, still gated on `active` so it only fires once the
+ * section is actually in view, same trigger point either way.
+ */
+function useSequentialCountUp(active: boolean, skip: boolean) {
+  const [values, setValues] = useState<number[]>(() => resultsStats.map(() => 0));
+
+  useEffect(() => {
+    if (!active) return;
+
+    if (skip) {
+      // Reduced motion: jump straight to final values, no rAF loop — this
+      // still only fires once `active` flips (post-mount, from the
+      // IntersectionObserver below), never synchronously at render time.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setValues(resultsStats.map((stat) => stat.value));
+      return;
+    }
+
+    let raf = 0;
+    let start: number | null = null;
+
+    const tick = (timestamp: number) => {
+      if (start === null) start = timestamp;
+      const elapsed = timestamp - start;
+
+      let allDone = true;
+      const next = resultsStats.map((stat) => {
+        const progress = Math.min(1, elapsed / stat.durationMs);
+        if (progress < 1) allDone = false;
+        // Ease-out cubic: decelerates into the final value instead of
+        // stopping dead.
+        const eased = 1 - Math.pow(1 - progress, 3);
+        return stat.value * eased;
+      });
+      setValues(next);
+
+      if (!allDone) raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [active, skip]);
+
+  return values;
+}
+
+export function RealResults() {
+  const reducedMotion = usePrefersReducedMotion();
+  const statsRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    const el = statsRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setActive(true);
+          observer.unobserve(el);
+        }
+      },
+      { threshold: 0.4 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const values = useSequentialCountUp(active, reducedMotion);
+
+  return (
+    <section className="border-t border-line">
+      <div className="mx-auto max-w-7xl px-6 pb-[26px] pt-[34px]">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <Reveal>
+            <div>
+              <span className="block text-xs uppercase tracking-[0.2em] text-[#FF7A2E]">
+                Performance
+              </span>
+              <h2 className="mt-2 font-heading text-[32px] font-extrabold uppercase leading-none tracking-[-0.04em] text-paper">
+                Real Results
+              </h2>
+            </div>
+          </Reveal>
+        </div>
+
+        <div ref={statsRef} className="mt-10 grid grid-cols-2 gap-[18px] md:grid-cols-4">
+          {resultsStats.map((stat, i) => (
+            <div key={stat.label} role="group" aria-label={spokenPhrase(stat)} className="min-w-0">
+              <span
+                aria-hidden="true"
+                className="block font-heading font-extrabold leading-none tracking-[-0.04em] text-paper tabular-nums text-[42px]"
+                style={{ minWidth: `${formatStat(stat.value, stat).length}ch` }}
+              >
+                {formatStat(values[i], stat)}
+              </span>
+              <span aria-hidden="true" className="mt-[10px] block text-[11.5px] uppercase tracking-[0.16em] text-mute">
+                {stat.label}
+              </span>
+              <span aria-hidden="true" className="mt-3 block h-[2px] w-[22px] bg-arc" />
+            </div>
+          ))}
+        </div>
+
+        {resultsStatsArePlaceholder && (
+          <p className="mt-6 text-[11px] text-[#DE9668]">
+            Placeholder figures — replace with real campaign data
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}

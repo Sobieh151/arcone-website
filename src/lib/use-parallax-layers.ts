@@ -7,16 +7,9 @@ import {
   parallaxMaxDisplacementPx,
 } from "@/animations/hero";
 
-// The mountain/light-trail layers are <g> nodes inside the background
-// <svg> (SVGElement), while the background wrapper and the ARC mark are
-// plain HTML elements — both expose `.style`, so one union covers both.
-type StyleableElement = HTMLElement | SVGElement;
-
 type HeroLayerRefs = {
-  background: RefObject<StyleableElement | null>;
-  mountain: RefObject<StyleableElement | null>;
-  lightTrail: RefObject<StyleableElement | null>;
-  mark: RefObject<StyleableElement | null>;
+  background: RefObject<HTMLElement | null>;
+  mark: RefObject<HTMLElement | null>;
 };
 
 function clamp(v: number) {
@@ -24,10 +17,9 @@ function clamp(v: number) {
 }
 
 /**
- * Cursor-follow parallax for the hero's four layers, each drifting at its
- * own speed off one shared, lerped pointer offset — "background 1x,
- * mountain 1.05x, light trail 1.1x, ARC mark 1.15x" per the hero spec.
- * Desktop only (fine pointer + hover-capable) and off entirely when
+ * Cursor-follow parallax for the hero's two layers, each drifting at its
+ * own speed off one shared, lerped pointer offset — "image 1x, ARC mark
+ * 1.15x" per the hero spec. Desktop only (fine pointer + hover-capable) and off entirely when
  * `enabled` is false (reduced motion, or mobile) — the goal is "something
  * about this feels 3D," not motion on every device.
  *
@@ -55,10 +47,8 @@ export function useParallaxLayers(refs: HeroLayerRefs, enabled: boolean) {
     };
     window.addEventListener("pointermove", onMove, { passive: true });
 
-    const layerEntries: [RefObject<StyleableElement | null>, number][] = [
+    const layerEntries: [RefObject<HTMLElement | null>, number][] = [
       [refs.background, parallaxLayers.background],
-      [refs.mountain, parallaxLayers.mountain],
-      [refs.lightTrail, parallaxLayers.lightTrail],
       [refs.mark, parallaxLayers.mark],
     ];
 

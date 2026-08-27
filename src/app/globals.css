@@ -11,7 +11,7 @@
   --ink-soft: #0d0d0d;
   --line: #1f1f1f;
   --mute: #6f6d6a;
-  --paper: #ebe8e3;
+  --paper: #f7f5f2;
   --arc: #ff4a0d;
   /* Hover/highlight tint for --arc — not one of the six given tokens, but
      every filled-orange element needs a visibly brighter hover state
@@ -338,27 +338,6 @@ html.lenis body {
    `prefers-reduced-motion` rule further down already zeroes every
    animation-duration to 0.01ms, so reduced-motion support is automatic —
    nothing in hero-background.tsx has to check for it itself. */
-@keyframes hero-haze-drift {
-  0%, 100% { transform: translate3d(-2%, 0, 0); }
-  50% { transform: translate3d(2%, 0, 0); }
-}
-
-.hero-haze {
-  animation: hero-haze-drift 34s ease-in-out infinite;
-}
-
-/* offset-distance, not stroke-dashoffset — see the long comment on
-   hero-trail-bright's <ellipse> in hero-background.tsx for why: this is
-   the fix for the single biggest performance cost on this page. */
-@keyframes hero-trail-flow {
-  from { offset-distance: 0%; }
-  to { offset-distance: 100%; }
-}
-
-.hero-trail-bright {
-  animation: hero-trail-flow 8s linear infinite;
-}
-
 @keyframes hero-mark-glow {
   0%, 100% { opacity: 0.55; }
   50% { opacity: 1; }
@@ -567,7 +546,7 @@ textarea:focus-visible,
   top: 50%;
   transform:
     translate(-50%, -50%)
-    translateX(calc(var(--card-distance, 0) * var(--card-spacing, 230px) + var(--drag-offset, 0px)))
+    translateX(calc(var(--card-distance, 0) * var(--card-spacing, 236px) + var(--drag-offset, 0px)))
     scale(var(--card-scale, 1));
   z-index: var(--card-z, 1);
 }
@@ -604,6 +583,21 @@ textarea:focus-visible,
 
 .explore-scroll-row > * {
   scroll-snap-align: center;
+}
+
+/* First-visit "click to explore" hint (components/portfolio/explore-work.tsx)
+   — a one-time nudge toward the right-hand adjacent card, gone for good
+   once the carousel's been touched. Three iterations, no fill-mode: the
+   0%/100% keyframe already matches the element's own resting transform,
+   so it settles cleanly with no explicit forwards/hold state needed. */
+@keyframes work-hint-nudge {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  45% { transform: translate(-14px, -4px) scale(1); }
+  60% { transform: translate(-14px, -4px) scale(0.94); }
+}
+
+.work-hint-nudge {
+  animation: work-hint-nudge 1.3s ease-in-out 3;
 }
 
 /* Respect the OS-level reduced-motion preference for anything not already

@@ -71,8 +71,6 @@ export const ambientMotion = {
 // result is clamped to maxDisplacementPx regardless of speed.
 export const parallaxLayers = {
   background: 1,
-  mountain: 1.05,
-  lightTrail: 1.1,
   mark: 1.15,
 };
 
