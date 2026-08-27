@@ -1,12 +1,7 @@
-// Navbar hide-on-scroll, active-pill, and mobile-menu motion values.
+// Navbar hide-on-scroll and mobile-menu motion values.
 
 export const navHideTransition = {
   duration: 0.5,
-  ease: [0.16, 1, 0.3, 1] as const,
-};
-
-export const navPillTransition = {
-  duration: 0.4,
   ease: [0.16, 1, 0.3, 1] as const,
 };
 

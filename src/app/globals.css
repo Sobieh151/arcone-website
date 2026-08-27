@@ -385,33 +385,86 @@ html.lenis body {
 }
 
 /* ------------------------------------------------------------------ */
-/* Navigation (components/layout/nav.tsx) — three parts across the top:
-   the ARCone mark alone on the left (no container of its own), a single
-   pill in the centre holding the nav links and the CTA together, and the
-   circular menu toggle (.icon-btn above) on the right, which opens the
-   full-screen menu at every breakpoint, not only on mobile. */
+/* Navigation (components/layout/nav.tsx) — one pill, not three separate
+   pieces: the mark, the links, and the menu toggle all live inside it,
+   left to right, separated by two 1px dividers rather than by being
+   independently positioned/floating. Width fits content (no explicit
+   width anywhere here), horizontally centred by the flex row it sits in
+   (components/layout/nav.tsx), fixed 20px from the top. */
 .nav-pill {
+  display: flex;
+  align-items: center;
+  height: 52px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(10, 10, 10, 0.5);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 10, 10, 0.55);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  padding: 0 18px;
+}
+
+/* Both dividers (mark|links and links|menu) share this one treatment —
+   the 18px clearance on each side lives here (margin), not as gap on
+   the pill itself, so it survives the links group being hidden/shown
+   at the sm breakpoint without needing a second, conditional value. */
+.nav-divider {
+  flex: none;
+  width: 1px;
+  height: 20px;
+  margin: 0 18px;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .nav-link {
   font-size: 12.5px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(247, 245, 242, 0.75);
-  padding: 12px 20px;
-  transition: color 300ms var(--ease-smooth);
+  color: rgba(247, 245, 242, 0.72);
+  padding: 6px 0;
+  transition: color 400ms var(--ease-smooth);
 }
 
 .nav-link:hover,
 .nav-link--active {
   color: var(--paper);
+}
+
+/* Icon-only — no circle, no border, unlike the site's other icon
+   buttons (.icon-btn). Opacity carries the hover state, not colour,
+   per the brief. padding + a matching negative margin enlarges the tap
+   target without moving the icon itself or changing the 18px gap the
+   pill's own padding already gives it to the right edge. */
+.nav-menu-btn {
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--paper);
+  opacity: 0.7;
+  background: none;
+  border: none;
+  padding: 13px;
+  margin: -13px;
+  cursor: pointer;
+  transition: opacity 300ms var(--ease-smooth);
+}
+
+.nav-menu-btn:hover,
+.nav-menu-btn:focus-visible {
+  opacity: 1;
+}
+
+.nav-mark,
+.nav-link,
+.nav-menu-btn {
+  outline: none;
+}
+
+.nav-mark:focus-visible,
+.nav-link:focus-visible,
+.nav-menu-btn:focus-visible {
+  outline: 2px solid var(--arc-bright);
+  outline-offset: 3px;
 }
 
 /* ------------------------------------------------------------------ */

@@ -4,21 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ArcMarkGlyph } from "@/components/icons/arc-mark";
 import { mainNav } from "@/content/navigation";
-import { primaryCta } from "@/content/shared";
 import { useLenis } from "@/components/providers/smooth-scroll";
-import { Button } from "@/components/buttons/button";
-import { IconButton } from "@/components/buttons/icon-button";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { useMarkSpin } from "@/lib/use-mark-spin";
 import { useAppReady } from "@/components/providers/app-ready";
 import { heroSequence } from "@/animations/hero";
 import {
   navHideTransition,
-  navPillTransition,
   mobileMenuVariants,
   mobileMenuTransition,
   navScrollConfig,
@@ -124,82 +120,80 @@ export function Nav() {
           y: navHideTransition,
         }}
       >
-        <nav className="mx-auto grid w-full max-w-[1400px] grid-cols-[1fr_auto_1fr] items-center">
-          {/* LEFT — the mark alone, sitting directly on the page (no
-              pill/background of its own). */}
-          <Link href="/" data-cursor-hover aria-label="ARCone" className="justify-self-start" onFocus={onMarkFocus}>
-            {/* Pointer/click handlers live on this span (the actual spin
-                target, matching the ref) rather than the Link — a click
-                still bubbles up and navigates normally, this just also
-                kicks the spin. onFocus stays on the Link above: a plain
-                <span> child is never itself focusable, so it wouldn't
-                fire when Tab lands on the anchor around it. */}
-            <span
-              ref={markSpinRef}
-              className="block h-[34px] w-[34px]"
-              onPointerEnter={onMarkPointerEnter}
-              onPointerMove={onMarkPointerMove}
-              onPointerLeave={onMarkPointerLeave}
-              onClick={onMarkClick}
+        {/* One pill, not three floating pieces — mark, links and the menu
+            toggle all live inside it, in DOM/visual order. `justify-center`
+            on this full-width row (rather than sizing the pill itself) is
+            what keeps the pill's own width fit-to-content while still
+            landing it in the exact horizontal centre of the viewport. */}
+        <nav className="flex w-full justify-center">
+          <div className="nav-pill">
+            <Link
+              href="/"
+              data-cursor-hover
+              aria-label="ARCone"
+              // mr-5 is a fallback gap to the menu button for <640px,
+              // where the divider+links group below (and the margin
+              // that normally separates the mark from it) is hidden
+              // entirely — reset to 0 once that group is back and
+              // providing its own spacing, so the two gaps don't stack.
+              className="nav-mark mr-5 grid place-items-center rounded-full sm:mr-0"
+              onFocus={onMarkFocus}
             >
-              <ArcMarkGlyph className="h-full w-full" />
-            </span>
-          </Link>
+              {/* Pointer/click handlers live on this span (the actual spin
+                  target, matching the ref) rather than the Link — a click
+                  still bubbles up and navigates normally, this just also
+                  kicks the spin. onFocus stays on the Link above: a plain
+                  <span> child is never itself focusable, so it wouldn't
+                  fire when Tab lands on the anchor around it. */}
+              <span
+                ref={markSpinRef}
+                className="block h-[28px] w-[28px]"
+                onPointerEnter={onMarkPointerEnter}
+                onPointerMove={onMarkPointerMove}
+                onPointerLeave={onMarkPointerLeave}
+                onClick={onMarkClick}
+              >
+                <ArcMarkGlyph className="h-full w-full" />
+              </span>
+            </Link>
 
-          {/* CENTRE — links and the CTA together in one pill, width fits
-              its own content rather than stretching full-width. Hidden
-              below md: there's no room for a whole pill of links at
-              mobile widths, so the menu toggle on the right is the only
-              way in there — see "opens the full menu at every
-              breakpoint" below for why that toggle isn't itself
-              md:hidden the way this pill is. */}
-          <div className="nav-pill hidden items-center gap-1 justify-self-center md:flex">
-            <ul className="flex items-center">
-              {mainNav.map((link) => {
-                const active = pathname === link.href || pathname?.startsWith(`${link.href}/`);
-                return (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      data-cursor-hover
-                      aria-current={active ? "page" : undefined}
-                      className={cn("nav-link relative block rounded-full", active && "nav-link--active")}
-                    >
-                      {active && (
-                        <motion.span
-                          layoutId="nav-pill"
-                          className="absolute inset-0 rounded-full bg-white/8"
-                          transition={navPillTransition}
-                        />
-                      )}
-                      <span className="relative">{link.label}</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-            {/* No Magnetic wrapper here — the pill is a tight-fit
-                container (6px padding, width fits content), and
-                Magnetic's cursor-pull transform doesn't respect that: it
-                could push the button up to ~20px past the pill's own
-                right edge when the pointer neared it. Every other CTA on
-                the site has open space around it to pull into; this one
-                doesn't. */}
-            <Button href={primaryCta.href} className="px-[22px] py-3" icon={<ArrowUpRight size={14} />}>
-              {primaryCta.label}
-            </Button>
-          </div>
+            {/* Links + their two flanking dividers collapse together below
+                640px — there's no room for a whole link row at that width,
+                and everything they'd offer already lives in the
+                full-screen panel the menu button opens. */}
+            <div className="hidden items-center sm:flex">
+              <span aria-hidden="true" className="nav-divider" />
+              <ul className="flex items-center gap-[22px]">
+                {mainNav.map((link) => {
+                  const active = pathname === link.href || pathname?.startsWith(`${link.href}/`);
+                  return (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        data-cursor-hover
+                        aria-current={active ? "page" : undefined}
+                        className={cn("nav-link block", active && "nav-link--active")}
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+              <span aria-hidden="true" className="nav-divider" />
+            </div>
 
-          {/* The menu stays available at every breakpoint and sits with the
-              rest of the header controls rather than floating on its own. */}
-          <div className="nav-tools flex items-center justify-self-end">
-            <IconButton
+            <button
+              type="button"
+              className="nav-menu-btn"
               aria-label="Toggle menu"
               aria-expanded={menuOpen}
               aria-controls={MOBILE_MENU_ID}
+              data-cursor-hover
               onClick={() => setMenuOpen((v) => !v)}
-              icon={menuOpen ? <X size={18} /> : <Menu size={18} />}
-            />
+            >
+              {menuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
           </div>
         </nav>
       </motion.header>
@@ -213,7 +207,7 @@ export function Nav() {
             animate="visible"
             exit="exit"
             transition={mobileMenuTransition}
-            className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-10 backdrop-blur-xl"
+            className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-2 backdrop-blur-xl"
             style={{ background: "rgba(5, 5, 5, 0.97)" }}
           >
             <ul className="flex flex-col items-center gap-2">
@@ -229,9 +223,6 @@ export function Nav() {
                 </li>
               ))}
             </ul>
-            <Button href={primaryCta.href} className="w-fit" icon={<ArrowUpRight size={16} />}>
-              {primaryCta.label}
-            </Button>
           </motion.div>
         )}
       </AnimatePresence>
