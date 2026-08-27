@@ -37,14 +37,14 @@ const CAROUSEL_PROJECTS: CarouselProject[] = [
   { slug: "harbor-co", title: "Harbor & Co.", category: "Digital Marketing", image: placeholderArt("#9C3F0B"), href: "/work" },
 ];
 
-// Visual state — just active / inactive now, a flatter binary tier than
-// the old active/adjacent/further-out split: a short teaser row doesn't
-// need the extra depth cue. `blur`/`border`/`glow` are fixed values per
-// tier, only ever changed by a discrete index update (never a per-frame
-// loop); the 700ms CSS transition (globals.css: .explore-card) is what
-// animates the move between them. The active card's `glow` combines two
-// shadows — an inset top light edge plus the outer bloom — box-shadow
-// happily takes a comma-separated list of both.
+// Visual state — just active / inactive, a flatter binary tier than a
+// active/adjacent/further-out split: a short teaser row doesn't need the
+// extra depth cue. `blur`/`border`/`glow` are fixed values per tier, only
+// ever changed by a discrete index update (never a per-frame loop); the
+// 700ms CSS transition (globals.css: .explore-card) is what animates the
+// move between them. The active card's `glow` combines two shadows — an
+// inset top light edge plus the outer bloom — box-shadow happily takes a
+// comma-separated list of both.
 function cardState(distance: number) {
   if (distance === 0) {
     return {
@@ -69,26 +69,43 @@ function cardState(distance: number) {
 const WORK_HINT_SESSION_KEY = "arcone-work-hint";
 const WORK_HINT_APPEAR_DELAY_MS = 1100;
 const WORK_HINT_AUTO_DISMISS_MS = 7000;
+// How long the hint lingers on one card before sliding to the next —
+// "click the next rectangle" as a guided sequence, not a single static
+// point. Two stops fit comfortably inside the auto-dismiss window with
+// room to actually register each one.
+const WORK_HINT_STOP_MS = 2600;
+// Percentage positions within the track, tuned to the current (400px)
+// card width/spacing — the immediate right-hand neighbour, then the one
+// past it, so the hint visibly "walks" toward the edge of the row.
+const WORK_HINT_STOPS = [
+  { left: "74%", top: "50%" },
+  { left: "92%", top: "50%" },
+];
 
 /**
  * One-time "click to explore" affordance: nobody discovers the drag on
- * their own, so this nudges toward the right-hand adjacent card the
- * first time the carousel scrolls into view, then gets out of the way
- * for good. Gated on sessionStorage (shows once per session, set the
- * moment it actually appears — not merely when it's scheduled, so a
- * visitor who scrolls past without lingering still sees it next time)
- * and on `enabled`, which the caller ties to reduced-motion/touch — see
+ * their own, so this walks the pointer across the first couple of
+ * adjacent cards the first time the carousel scrolls into view, then
+ * gets out of the way for good — a short guided sequence ("here's one
+ * you can click, and another") rather than a single static point.
+ * Gated on sessionStorage (shows once per session, set the moment it
+ * actually appears — not merely when it's scheduled, so a visitor who
+ * scrolls past without lingering still sees it next time) and on
+ * `enabled`, which the caller ties to reduced-motion/touch — see
  * `hintEnabled` in ExploreWork.
  */
 function useWorkHint(enabled: boolean) {
   const [visible, setVisible] = useState(false);
+  const [stopIndex, setStopIndex] = useState(0);
   const hasScheduledRef = useRef(false);
   const showTimerRef = useRef<number | undefined>(undefined);
+  const stepTimerRef = useRef<number | undefined>(undefined);
   const dismissTimerRef = useRef<number | undefined>(undefined);
 
   const dismiss = useCallback(() => {
     setVisible(false);
     window.clearTimeout(showTimerRef.current);
+    window.clearTimeout(stepTimerRef.current);
     window.clearTimeout(dismissTimerRef.current);
   }, []);
 
@@ -98,7 +115,13 @@ function useWorkHint(enabled: boolean) {
     hasScheduledRef.current = true;
     showTimerRef.current = window.setTimeout(() => {
       setVisible(true);
+      setStopIndex(0);
       sessionStorage.setItem(WORK_HINT_SESSION_KEY, "1");
+      // Walk to the next stop partway through, then auto-dismiss at the
+      // usual total — consumeJustDragged/hintDismiss (from any real
+      // interaction) always wins over both of these regardless of which
+      // stop it's currently on.
+      stepTimerRef.current = window.setTimeout(() => setStopIndex(1), WORK_HINT_STOP_MS);
       dismissTimerRef.current = window.setTimeout(dismiss, WORK_HINT_AUTO_DISMISS_MS);
     }, WORK_HINT_APPEAR_DELAY_MS);
   }, [enabled, dismiss]);
@@ -108,11 +131,12 @@ function useWorkHint(enabled: boolean) {
   useEffect(() => {
     return () => {
       window.clearTimeout(showTimerRef.current);
+      window.clearTimeout(stepTimerRef.current);
       window.clearTimeout(dismissTimerRef.current);
     };
   }, []);
 
-  return { visible, onFirstView, dismiss };
+  return { visible, stopIndex, onFirstView, dismiss };
 }
 
 export function ExploreWork() {
@@ -152,7 +176,12 @@ export function ExploreWork() {
   // Destructured, not kept as a `hint.X` object — same reasoning as
   // `useCarouselDrag`'s call site below: a fresh object every render
   // would otherwise churn the effect/callback dependency arrays below.
-  const { visible: hintVisible, onFirstView: hintOnFirstView, dismiss: hintDismiss } = useWorkHint(hintEnabled);
+  const {
+    visible: hintVisible,
+    stopIndex: hintStopIndex,
+    onFirstView: hintOnFirstView,
+    dismiss: hintDismiss,
+  } = useWorkHint(hintEnabled);
 
   useEffect(() => {
     if (!hintEnabled) return;
@@ -217,11 +246,14 @@ export function ExploreWork() {
   const useNativeScroll = reducedMotion || isMobile;
 
   return (
-    <section className="relative overflow-hidden border-t border-line bg-ink py-20">
+    <section className="explore-work-row relative overflow-hidden border-t border-line bg-ink py-20">
       <div className="mx-auto max-w-7xl px-6 sm:px-10">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,280px)_1fr] lg:items-center lg:gap-8">
-          {/* Left column */}
-          <div>
+        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[220px_1fr]">
+          {/* Left column — dims when the carousel is being hovered/focused
+              (see .explore-work-row:has(...) in globals.css), so whichever
+              one you're actually paying attention to reads as the focus
+              and the other recedes rather than competing with it. */}
+          <div className="explore-text-block">
             <Reveal>
               <span className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-arc">
                 Explore Our Work
@@ -231,7 +263,7 @@ export function ExploreWork() {
             <MaskReveal
               as="p"
               delay={0.06}
-              className="mt-5 max-w-xs text-balance text-base leading-relaxed text-paper/65"
+              className="mt-5 text-balance text-base leading-relaxed text-paper/65"
             >
               [[ Explore Our Work — one to two sentence supporting line ]]
             </MaskReveal>
@@ -244,8 +276,10 @@ export function ExploreWork() {
             </Reveal>
           </div>
 
-          {/* Carousel */}
-          <div ref={carouselRef} className="relative">
+          {/* Carousel — the hero of this section, so it gets almost all
+              the row's width; the text column above is deliberately
+              narrow, not a competing half. */}
+          <div ref={carouselRef} className="explore-carousel-block relative">
             {useNativeScroll ? (
               <MobileRow
                 reducedMotion={reducedMotion}
@@ -258,7 +292,7 @@ export function ExploreWork() {
               />
             ) : (
               <>
-                <div className="flex items-center justify-center gap-[14px]">
+                <div className="flex items-center gap-[14px]">
                   <button
                     type="button"
                     data-cursor-hover
@@ -284,10 +318,10 @@ export function ExploreWork() {
                     onPointerCancel={onPointerCancel}
                     onKeyDown={onKeyDown}
                     className={cn(
-                      "explore-track relative h-[240px] w-full max-w-xl touch-pan-y select-none overflow-hidden",
+                      "explore-track relative h-[270px] w-full min-w-0 touch-pan-y select-none overflow-hidden",
                       isDragging && "is-dragging"
                     )}
-                    style={{ "--card-spacing": "264px" } as CSSProperties}
+                    style={{ "--card-spacing": "350px" } as CSSProperties}
                   >
                     {CAROUSEL_PROJECTS.map((entry, index) => {
                       const distance = circularDistance(index, activeIndex, length);
@@ -302,7 +336,7 @@ export function ExploreWork() {
                           aria-current={isActive ? "true" : undefined}
                           tabIndex={Math.abs(distance) > 1 ? -1 : 0}
                           onClick={(e) => activate(index, e.currentTarget)}
-                          className="explore-card explore-card--desktop group w-[300px] overflow-hidden rounded-[16px] border text-left"
+                          className="explore-card explore-card--desktop group w-[400px] overflow-hidden rounded-[16px] border text-left"
                           style={
                             {
                               "--card-distance": distance,
@@ -331,21 +365,21 @@ export function ExploreWork() {
                       );
                     })}
 
-                    {/* First-visit hint — over the right-hand adjacent
-                        card, gone the instant the carousel's touched. */}
+                    {/* First-visit guided hint — walks from the immediate
+                        neighbour to the one past it, then gone the instant
+                        the carousel's actually touched. */}
                     <AnimatePresence>
                       {hintVisible && (
                         <motion.div
                           key="work-hint"
                           aria-hidden="true"
                           className="pointer-events-none absolute z-40 -translate-x-1/2 -translate-y-1/2"
-                          style={{ left: "76%", top: "52%" }}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
+                          initial={{ opacity: 0, scale: 0.9, ...WORK_HINT_STOPS[0] }}
+                          animate={{ opacity: 1, scale: 1, ...WORK_HINT_STOPS[hintStopIndex] }}
                           exit={{ opacity: 0, scale: 0.9 }}
-                          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                         >
-                          <div className="work-hint-nudge flex items-center gap-2">
+                          <div key={hintStopIndex} className="work-hint-nudge flex items-center gap-2">
                             <MousePointer2 size={18} className="text-arc" />
                             <span className="whitespace-nowrap rounded-full border border-line bg-ink/85 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-paper backdrop-blur-sm">
                               Click to explore
@@ -390,10 +424,6 @@ export function ExploreWork() {
                     );
                   })}
                 </div>
-
-                <p className="mt-6 text-center font-mono text-[9px] uppercase tracking-[0.16em] text-mute">
-                  Click a card to focus
-                </p>
               </>
             )}
 

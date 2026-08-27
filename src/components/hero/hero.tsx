@@ -14,6 +14,7 @@ import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { useParallaxLayers } from "@/lib/use-parallax-layers";
 import { useAppReady } from "@/components/providers/app-ready";
 import { HeroScene, ArcMark, AuraHook } from "@/components/hero/hero-background";
+import { TrustedBy } from "@/components/sections/trusted-by";
 
 const arrow = <ArrowUpRight size={16} className="transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-0.5" />;
 
@@ -178,6 +179,19 @@ export function Hero() {
             <CtaButtons />
           </motion.div>
         )}
+      </div>
+
+      {/* Trusted By is the Hero's own footer, not a standalone section
+          between Hero and Explore Work (page.tsx no longer renders it
+          separately) — the Hero should visually end with these clients.
+          Pinned to the bottom edge on larger viewports (lg:absolute) so
+          it doesn't join the section's own `justify-center` group above
+          and shift the headline off-centre; on shorter mobile viewports
+          it stays in normal flow instead; extending the section a little
+          past 100vh there is safer than risking it overlapping the CTAs
+          on a short screen. */}
+      <div className="relative z-10 lg:absolute lg:inset-x-0 lg:bottom-0">
+        <TrustedBy />
       </div>
     </section>
   );

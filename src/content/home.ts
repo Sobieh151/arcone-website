@@ -94,22 +94,28 @@ export const testimonials: Testimonial[] = [
   { quote: "[[ Client testimonial quote ]]", name: "[[ Client name ]]", role: "[[ Role, Company ]]" },
 ];
 
-// "Trusted By" marquee (components/sections/trusted-by.tsx).
+export type TrustedByClient = {
+  name: string;
+  slug: string;
+  // Path to the real logo file (e.g. "/logos/acme.svg"). Rendered
+  // grayscale at rest, full color on hover/focus/tap — see
+  // .trusted-client-icon in globals.css.
+  src: string;
+};
+
+// "Trusted By" (the Hero's own footer — components/sections/trusted-by.tsx).
+// This used to hold a list of real but unconfirmed company names (SERA,
+// UBR, SERAC, TMG, SENSI, NILE, CITY EDGE, VOX, ELSEWEDY, ORASCOM), then
+// briefly pointed at the site's fictional placeholder case studies in
+// data/projects.ts instead. Neither is acceptable here: naming an
+// unconfirmed client is a legal/reputational risk, and a "client" logo
+// that's actually a made-up case study is fake either way — this section
+// makes an explicit claim of a real client relationship, so it must only
+// ever show clients who are actually confirmed.
 //
-// UNVERIFIED — these names came from a design mockup, not from a
-// confirmed client list. Naming a client you have not worked with is a
-// legal and reputational risk. Confirm every name before launch and
-// delete any that cannot be backed up. Fewer real names beats more
-// unverified ones.
-export const trustedByClients = [
-  "SERA",
-  "UBR",
-  "SERAC",
-  "TMG",
-  "SENSI",
-  "NILE",
-  "CITY EDGE",
-  "VOX",
-  "ELSEWEDY",
-  "ORASCOM",
-];
+// Ships empty on purpose. Add a real, confirmed client here only once
+// you have their name and an approved logo file:
+//   { name: "Acme Co.", slug: "acme", src: "/logos/acme.svg" }
+// Trusted By hides itself entirely while this is empty rather than
+// rendering any placeholder — an empty strip beats a fake logo.
+export const trustedByClients: TrustedByClient[] = [];

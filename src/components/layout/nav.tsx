@@ -13,6 +13,7 @@ import { useLenis } from "@/components/providers/smooth-scroll";
 import { Button } from "@/components/buttons/button";
 import { Magnetic } from "@/components/buttons/magnetic";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
+import { useMarkSpin } from "@/lib/use-mark-spin";
 import { useAppReady } from "@/components/providers/app-ready";
 import { heroSequence } from "@/animations/hero";
 import {
@@ -29,6 +30,22 @@ export function Nav() {
   const pathname = usePathname();
   const [hidden, setHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // The nav mark's momentum spin — see use-mark-spin.ts. Direction is
+  // inverted and position-relative (which side of the mark you're on/
+  // moving toward), speed comes from actual pointer velocity, and the
+  // "spins fast then slows down smoothly" feel is the friction decay
+  // itself, not a fixed CSS easing curve. Destructured, not kept as a
+  // `markSpin.X` object — same reasoning as useCarouselDrag's call site
+  // in explore-work.tsx: eslint's react-hooks/refs rule flags property
+  // access into an object carrying a ref (the spin target ref here).
+  const {
+    ref: markSpinRef,
+    onPointerEnter: onMarkPointerEnter,
+    onPointerMove: onMarkPointerMove,
+    onPointerLeave: onMarkPointerLeave,
+    onClick: onMarkClick,
+    onFocus: onMarkFocus,
+  } = useMarkSpin<HTMLSpanElement>();
   const lastY = useRef(0);
   const lenis = useLenis();
   const reducedMotion = usePrefersReducedMotion();
@@ -111,8 +128,23 @@ export function Nav() {
           className="mx-auto flex w-full max-w-[1400px] items-center justify-between rounded-full border border-border px-3 py-2 backdrop-blur-md"
           style={{ background: "rgba(5, 5, 5, 0.7)" }}
         >
-          <Link href="/" data-cursor-hover aria-label="ARCone" className="rounded-full p-1.5">
-            <ArcMarkGlyph className="h-[26px] w-[26px]" />
+          <Link href="/" data-cursor-hover aria-label="ARCone" className="rounded-full p-1.5" onFocus={onMarkFocus}>
+            {/* Pointer/click handlers live on this span (the actual spin
+                target, matching the ref) rather than the Link — a click
+                still bubbles up and navigates normally, this just also
+                kicks the spin. onFocus stays on the Link above: a plain
+                <span> child is never itself focusable, so it wouldn't
+                fire when Tab lands on the anchor around it. */}
+            <span
+              ref={markSpinRef}
+              className="block h-[26px] w-[26px]"
+              onPointerEnter={onMarkPointerEnter}
+              onPointerMove={onMarkPointerMove}
+              onPointerLeave={onMarkPointerLeave}
+              onClick={onMarkClick}
+            >
+              <ArcMarkGlyph className="h-full w-full" />
+            </span>
           </Link>
 
           <ul className="hidden items-center gap-1 md:flex">

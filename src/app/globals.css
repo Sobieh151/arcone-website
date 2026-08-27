@@ -322,10 +322,12 @@ html.lenis body {
 
 /* ------------------------------------------------------------------ */
 /* Trusted-by client marquee (components/sections/trusted-by.tsx) — a
-   continuous right-to-left ticker. Reuses the `marquee` keyframe already
-   declared in @theme above (translateX 0 -> -50%); this is its own class
-   rather than the `animate-marquee` utility because the hover slow-down
-   needs its own tunable duration, not @theme's fixed 30s. */
+   continuous right-to-left ribbon of client icons, the footer of the
+   Hero rather than a standalone section. Reuses the `marquee` keyframe
+   already declared in @theme above (translateX 0 -> -50%); this is its
+   own class because the base speed here (70s — cinematic and calm, not
+   a fast advertising ticker) is deliberately much slower than @theme's
+   fixed 30s. */
 .marquee-mask {
   mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
   -webkit-mask-image: linear-gradient(
@@ -337,33 +339,25 @@ html.lenis body {
   );
 }
 
-/* animation-duration itself has no defined interpolation — a plain
-   `transition: animation-duration` would just snap partway through
-   instead of easing. Registering --marquee-duration as a <time> lets the
-   browser tween the number smoothly instead, and since the running
-   animation recalculates its position from elapsed-time / duration every
-   frame, a smoothly-changing duration produces a smooth deceleration
-   with no jump in scroll position — not just a smoothly-changing number
-   that then snaps the motion when it's applied. */
-@property --marquee-duration {
-  syntax: "<time>";
-  inherits: true;
-  initial-value: 45s;
-}
-
 .marquee-track {
-  --marquee-duration: 45s;
+  --marquee-duration: 70s;
   width: fit-content;
   animation: marquee var(--marquee-duration) linear infinite;
-  transition: --marquee-duration 0.6s var(--ease-smooth);
   will-change: transform;
 }
 
-/* Slows toward half speed on hover/focus rather than stopping dead —
-   "roughly half speed," not paused. */
+/* Hovering or focusing *any* client icon pauses the whole row — full
+   stop, not a slow-down — until the pointer/focus leaves the row again.
+   animation-play-state (not a duration or transform change) is what
+   makes this resume from the exact frame it paused on with no snap or
+   jump: pausing a running CSS animation freezes its current computed
+   state outright, and `running` just continues the same timeline from
+   there. :focus-within (not :focus-visible) so hovering with a mouse
+   while a nearby icon happens to hold focus still counts as "inside the
+   row" for pausing purposes. */
 .marquee-row:hover .marquee-track,
 .marquee-row:focus-within .marquee-track {
-  --marquee-duration: 90s;
+  animation-play-state: paused;
 }
 
 /* "TRUSTED BY" label ambient aura — a soft --arc glow sitting behind the
@@ -425,6 +419,36 @@ html.lenis body {
 @keyframes trusted-label-sweep {
   0% { background-position: 200% 0; }
   13.333%, 100% { background-position: -100% 0; }
+}
+
+/* Client icons (components/portfolio/client-icon.tsx) — monochrome at
+   rest, that client's real colour on hover/focus, via one CSS
+   `filter: grayscale()` toggle on the badge rather than swapping images
+   or classes. That single toggle works identically whether the content
+   underneath is the placeholder monogram or (later) a real logo image,
+   which is what "same source, no duplicate files" actually means here.
+   --client-color is written per-icon from React (project.color). */
+.trusted-client-icon {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+  filter: grayscale(1);
+  transition:
+    filter 500ms var(--ease-smooth),
+    border-color 500ms var(--ease-smooth),
+    box-shadow 500ms var(--ease-smooth),
+    transform 500ms var(--ease-smooth);
+}
+
+.trusted-client-icon-mono {
+  color: var(--paper);
+}
+
+.trusted-client:hover .trusted-client-icon,
+.trusted-client:focus-visible .trusted-client-icon {
+  filter: grayscale(0);
+  border-color: var(--client-color, var(--arc));
+  box-shadow: 0 0 22px color-mix(in srgb, var(--client-color, var(--arc)) 45%, transparent);
+  transform: scale(1.1);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -530,7 +554,7 @@ textarea:focus-visible,
   top: 50%;
   transform:
     translate(-50%, -50%)
-    translateX(calc(var(--card-distance, 0) * var(--card-spacing, 264px) + var(--drag-offset, 0px)))
+    translateX(calc(var(--card-distance, 0) * var(--card-spacing, 350px) + var(--drag-offset, 0px)))
     scale(var(--card-scale, 1));
   z-index: var(--card-z, 1);
 }
@@ -570,11 +594,38 @@ textarea:focus-visible,
   scroll-snap-align: center;
 }
 
+/* Text/carousel cross-fade (components/portfolio/explore-work.tsx) —
+   whichever half you're actually paying attention to reads as the focus,
+   the other recedes instead of competing with it. `:has()`, not React
+   state: the two blocks are siblings under one row, and this only needs
+   to read "is the OTHER one being hovered/focused", which a relational
+   selector on their shared parent handles for free — same pattern as the
+   closing CTA's `.contact-cta:has(...)`. Hover-triggered and bounded, not
+   a continuous loop, so it's outside the 60fps-audit's compositor-only
+   scope the same way every other hover transition in this codebase is. */
+.explore-text-block,
+.explore-carousel-block {
+  opacity: 1;
+  transition: opacity 500ms var(--ease-smooth);
+}
+
+.explore-work-row:has(.explore-text-block:hover, .explore-text-block:focus-within) .explore-carousel-block {
+  opacity: 0.45;
+}
+
+.explore-work-row:has(.explore-carousel-block:hover, .explore-carousel-block:focus-within) .explore-text-block {
+  opacity: 0.45;
+}
+
 /* First-visit "click to explore" hint (components/portfolio/explore-work.tsx)
-   — a one-time nudge toward the right-hand adjacent card, gone for good
-   once the carousel's been touched. Three iterations, no fill-mode: the
-   0%/100% keyframe already matches the element's own resting transform,
-   so it settles cleanly with no explicit forwards/hold state needed. */
+   — walks from one adjacent card to the next, gone for good once the
+   carousel's been touched. This nudge (a per-stop "look, click here"
+   micro-motion) is separate from the left/top walk between stops, which
+   the component animates itself via Framer Motion. Three iterations, no
+   fill-mode: the 0%/100% keyframe already matches the element's own
+   resting transform, so it settles cleanly with no explicit forwards/hold
+   state needed — and re-keying the element per stop (see the component)
+   restarts these three iterations fresh at each new position. */
 @keyframes work-hint-nudge {
   0%, 100% { transform: translate(0, 0) scale(1); }
   45% { transform: translate(-14px, -4px) scale(1); }

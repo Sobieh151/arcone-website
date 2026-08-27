@@ -19,6 +19,10 @@ export type Project = {
   execution: string;
   results: { label: string; value: string }[];
   color: string;
+  // Case-study preview slider (components/portfolio/work-slider.tsx) —
+  // undefined for now, falls back to generated placeholder gradients.
+  // Real photography drops in here as a plain array of image paths.
+  previewImages?: string[];
 };
 
 export const projects: Project[] = [
