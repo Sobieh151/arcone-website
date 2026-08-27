@@ -673,9 +673,16 @@ textarea:focus-visible,
   transition: opacity 500ms var(--ease-smooth);
 }
 
+/* The node's own capability icon (components/icons/capability-icons.tsx)
+   — stroke-based, currentColor. --mute at rest, --arc on hover/focus,
+   written per-node from React same as the other --node-* properties
+   above. Deliberately no transform here any more: a meaningful,
+   per-capability icon shouldn't spin on hover the way the old identical
+   ARCone-mark placeholder did — only the big centre mark still rotates,
+   to point at whichever node is active. */
 .capabilities-node-icon-mark {
-  transform: rotate(var(--node-icon-rotate, 0deg));
-  transition: transform 550ms var(--ease-smooth);
+  color: var(--node-icon-color, var(--mute));
+  transition: color 500ms var(--ease-smooth);
 }
 
 .capabilities-node-name {

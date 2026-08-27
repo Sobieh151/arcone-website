@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { services, type Service } from "@/content/services";
-import { ArcMarkGlyph } from "@/components/icons/arc-mark";
+import { capabilityIcons } from "@/components/icons/capability-icons";
 import { Reveal } from "@/components/animations/reveal";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
@@ -205,6 +205,7 @@ export function ServicesTeaser() {
               {services.map((service) => {
                 const isActive = service.slug === activeSlug;
                 const pos = nodePosition(service.angle);
+                const Icon = capabilityIcons[service.slug];
                 return (
                   <button
                     key={service.slug}
@@ -248,10 +249,10 @@ export function ServicesTeaser() {
                           } as CSSProperties
                         }
                       >
-                        <ArcMarkGlyph
-                          aria-hidden
+                        <Icon
+                          aria-hidden="true"
                           className="capabilities-node-icon-mark h-[21px] w-[21px]"
-                          style={{ "--node-icon-rotate": isActive && !reducedMotion ? "60deg" : "0deg" } as CSSProperties}
+                          style={{ "--node-icon-color": isActive ? "var(--arc)" : "var(--mute)" } as CSSProperties}
                         />
                       </span>
                     </span>
@@ -308,6 +309,7 @@ function CapabilitiesList({
     <ul className="mt-8 divide-y divide-line border-t border-line">
       {services.map((service) => {
         const isOpen = service.slug === activeSlug;
+        const Icon = capabilityIcons[service.slug];
         return (
           <li key={service.slug}>
             <button
@@ -321,7 +323,11 @@ function CapabilitiesList({
                 className="grid h-12 w-12 flex-none place-items-center rounded-full border"
                 style={{ borderColor: "rgba(255,90,26,0.6)", background: "rgba(5,5,5,0.96)" }}
               >
-                <ArcMarkGlyph aria-hidden className="h-[21px] w-[21px]" />
+                <Icon
+                  aria-hidden="true"
+                  className="h-[21px] w-[21px] transition-colors duration-500"
+                  style={{ color: isOpen ? "var(--arc)" : "var(--mute)" }}
+                />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[12.5px] font-bold uppercase tracking-[-0.015em] text-paper">
