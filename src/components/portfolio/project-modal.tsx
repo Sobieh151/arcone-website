@@ -29,6 +29,18 @@ export function ProjectModal({
 
   return (
     <motion.div
+      // data-lenis-prevent: Lenis's global wheel/touch listener keeps
+      // calling preventDefault() on every gesture site-wide even after
+      // lenis.stop() (confirmed by reading its source and reproducing —
+      // stop() pauses Lenis's own scroll animation, but its listener
+      // still intercepts the event first rather than releasing it back to
+      // native scrolling). Without this attribute, that swallowed every
+      // wheel/touch gesture over this panel too, so overflow-y-auto below
+      // never actually got a scroll event to act on. This tells Lenis to
+      // skip its own handling for anything inside this subtree and let
+      // the browser scroll it natively instead — see lenis/dist/lenis.mjs,
+      // the composedPath().find(... data-lenis-prevent ...) check.
+      data-lenis-prevent
       className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto p-4 py-10 sm:p-8"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}

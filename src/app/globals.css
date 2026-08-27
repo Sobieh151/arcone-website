@@ -715,6 +715,28 @@ textarea:focus-visible,
   animation: about-photo-pan 14s ease-in-out infinite alternate;
 }
 
+/* ------------------------------------------------------------------ */
+/* Closing CTA (components/sections/contact-cta.tsx) — the arc that opened
+   in the hero completes here. The drawing line's dashoffset is driven by
+   GSAP ScrollTrigger (scrub, not a CSS animation) so it isn't declared
+   here; this is just its rest opacity and the hover-lift transition.
+   `:has()` (not React state) is what connects the primary button's hover
+   back to the arc: the two aren't siblings in DOM order (the SVG paints
+   first, behind the content), so a plain `~` sibling selector couldn't
+   reach backwards from the button to it, but `:has()` matches upward from
+   their shared section regardless of which one comes first. */
+.cta-arc-draw {
+  opacity: 0.75;
+  transition:
+    opacity 500ms var(--ease-smooth),
+    filter 500ms var(--ease-smooth);
+}
+
+.contact-cta:has(.cta-primary-trigger:hover, .cta-primary-trigger:focus-visible) .cta-arc-draw {
+  opacity: 1;
+  filter: drop-shadow(0 0 8px rgba(255, 90, 26, 0.5));
+}
+
 /* Respect the OS-level reduced-motion preference for anything not already
    covered by Framer Motion's MotionConfig or a usePrefersReducedMotion
    check (e.g. plain CSS transitions on hover states). */

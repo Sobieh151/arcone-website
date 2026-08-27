@@ -32,16 +32,20 @@ export function useProjectModal() {
   const close = useCallback(() => setProject(null), []);
 
   useEffect(() => {
+    // documentElement, not body — Loader (components/Loader.tsx) already
+    // locks documentElement.style.overflow during initial load, so this
+    // matches the one element actually being locked/restored elsewhere on
+    // the site instead of introducing a second, inconsistent target.
     if (project) {
       lenis?.stop();
-      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
     } else {
       lenis?.start();
-      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
       triggerRef.current?.focus();
     }
     return () => {
-      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
     };
   }, [project, lenis]);
 
