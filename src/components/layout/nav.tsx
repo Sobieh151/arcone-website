@@ -12,7 +12,6 @@ import { primaryCta } from "@/content/shared";
 import { useLenis } from "@/components/providers/smooth-scroll";
 import { Button } from "@/components/buttons/button";
 import { IconButton } from "@/components/buttons/icon-button";
-import { Magnetic } from "@/components/buttons/magnetic";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { useMarkSpin } from "@/lib/use-mark-spin";
 import { useAppReady } from "@/components/providers/app-ready";
@@ -137,7 +136,7 @@ export function Nav() {
                 fire when Tab lands on the anchor around it. */}
             <span
               ref={markSpinRef}
-              className="block h-[30px] w-[30px]"
+              className="block h-[34px] w-[34px]"
               onPointerEnter={onMarkPointerEnter}
               onPointerMove={onMarkPointerMove}
               onPointerLeave={onMarkPointerLeave}
@@ -179,11 +178,16 @@ export function Nav() {
                 );
               })}
             </ul>
-            <Magnetic strength={0.3} className="inline-flex">
-              <Button href={primaryCta.href} size="sm" icon={<ArrowUpRight size={14} />}>
-                {primaryCta.label}
-              </Button>
-            </Magnetic>
+            {/* No Magnetic wrapper here — the pill is a tight-fit
+                container (6px padding, width fits content), and
+                Magnetic's cursor-pull transform doesn't respect that: it
+                could push the button up to ~20px past the pill's own
+                right edge when the pointer neared it. Every other CTA on
+                the site has open space around it to pull into; this one
+                doesn't. */}
+            <Button href={primaryCta.href} className="px-[22px] py-3" icon={<ArrowUpRight size={14} />}>
+              {primaryCta.label}
+            </Button>
           </div>
 
           {/* The menu stays available at every breakpoint and sits with the

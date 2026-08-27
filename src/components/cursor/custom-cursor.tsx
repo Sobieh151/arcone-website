@@ -54,31 +54,19 @@ export function CustomCursor() {
     let ringY = window.innerHeight / 2;
     let mouseX = ringX;
     let mouseY = ringY;
-    // Paint both elements at their starting position immediately (rather
-    // than sitting pinned at the dot's default (0,0) markup position)
-    // so they're already where the pointer roughly is once revealed —
-    // but stay hidden (opacity: 0 in the JSX below) until that first
-    // real mousemove actually arrives. Without that gate this "start at
-    // centre" position is itself what was visible: a real user's mouse
-    // is essentially always somewhere on screen already at page load, so
-    // this only ever painted for a handful of frames for them — but
-    // anything that never fires a mousemove at all (a headless browser
-    // driving the page programmatically, a screenshot tool) left it
-    // sitting there indefinitely, looking like a small stray ring+dot
-    // fixed near the middle of every page.
+    // Paint both elements at their starting position immediately so
+    // they're visible right away, instead of sitting pinned at the dot's
+    // default (0,0) markup position until the first real mousemove event
+    // fires. A real user's mouse is essentially always somewhere on
+    // screen already at page load, so this is only ever visible for a
+    // handful of frames for them.
     dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
     ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
 
-    let revealed = false;
     const onMove = (e: MouseEvent) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
       dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
-      if (!revealed) {
-        revealed = true;
-        dot.style.opacity = "1";
-        ring.style.opacity = "1";
-      }
     };
 
     // Full lag-behind trailing effect when motion is welcome; snaps
@@ -121,18 +109,13 @@ export function CustomCursor() {
       <div
         ref={dotRef}
         className="pointer-events-none fixed left-0 top-0 z-[100] h-1.5 w-1.5 rounded-full bg-orange-highlight"
-        // opacity: 0 here (a plain, constant JSX value the "hovering"
-        // re-renders below never touch) is what keeps this invisible
-        // until onMove's one-time reveal writes "1" straight onto the
-        // DOM node — see the comment above onMove for why.
-        style={{ willChange: "transform", opacity: 0 }}
+        style={{ willChange: "transform" }}
       />
       <div
         ref={ringRef}
         className="pointer-events-none fixed left-0 top-0 z-[100] rounded-full border transition-[width,height,opacity] duration-300 ease-out"
         style={{
           willChange: "transform",
-          opacity: 0,
           width: hovering ? cursorSize.hover : cursorSize.base,
           height: hovering ? cursorSize.hover : cursorSize.base,
           borderColor: "var(--color-orange)",

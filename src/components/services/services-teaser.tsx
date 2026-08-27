@@ -133,7 +133,7 @@ export function ServicesTeaser() {
 
   return (
     <section
-      className="relative overflow-hidden border-t border-line px-6 py-[34px]"
+      className="relative overflow-hidden border-t border-line px-6 py-16"
       style={{
         background:
           "radial-gradient(circle at 50% 46%, rgba(255,90,26,0.09), transparent 26%), linear-gradient(#030303, #050505 70%, #020202)",
@@ -162,7 +162,7 @@ export function ServicesTeaser() {
               ref={orbitRef}
               onPointerMove={onOrbitPointerMove}
               onPointerLeave={onOrbitPointerLeave}
-              className="relative mx-auto mt-12 max-w-[760px]"
+              className="relative mx-auto mt-[22px] max-w-[760px]"
               style={{ aspectRatio: `${ORBIT_VIEWBOX_WIDTH} / ${ORBIT_VIEWBOX_HEIGHT}` }}
             >
               <div className="capabilities-floor-grid absolute inset-0" aria-hidden="true" />
@@ -306,7 +306,7 @@ function CapabilitiesList({
   onToggle: (service: Service) => void;
 }) {
   return (
-    <ul className="mt-8 divide-y divide-line border-t border-line">
+    <ul className="mt-[22px] divide-y divide-line border-t border-line">
       {services.map((service) => {
         const isOpen = service.slug === activeSlug;
         const Icon = capabilityIcons[service.slug];

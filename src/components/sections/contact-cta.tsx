@@ -73,7 +73,7 @@ export function ContactCta() {
     // go looking for the nearest ancestor that establishes one.
     <section
       ref={sectionRef}
-      className="contact-cta relative isolate overflow-hidden border-t border-line px-6 pb-8 pt-11 sm:px-10"
+      className="contact-cta relative isolate overflow-hidden border-t border-line px-6 py-16 sm:px-10"
     >
       {/* Decorative — the real content is the headline/buttons below it,
           which is why this is aria-hidden rather than carrying any text
@@ -115,7 +115,7 @@ export function ContactCta() {
             ))}
           </h2>
 
-          <div className="mt-6 flex flex-wrap items-center gap-[11px]">
+          <div className="mt-[22px] flex flex-wrap items-center gap-[11px]">
             <Magnetic strength={0.3} className="inline-flex">
               {/* cta-primary-trigger: unrelated to the button's own
                   styling — it's what .contact-cta:has(...) below keys

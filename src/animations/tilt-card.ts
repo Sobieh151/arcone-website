@@ -1,7 +1,7 @@
 // TiltCard / GlassCard motion tuning — cursor-reactive glass tilt, shared
-// by every glass card on the site (stats, testimonials, work, services,
-// the hero badge). See useTilt (src/lib/use-tilt.ts) and the .glass /
-// .glass-shine utilities in globals.css.
+// by every glass card on the site (About's stats row, via GlassCard;
+// the hero badge and the project modal apply the same .glass /
+// .glass-shine surface directly). See useTilt (src/lib/use-tilt.ts).
 
 export const tiltMaxDeg = 8; // rotateX/rotateY at the card's far edge
 export const tiltPerspective = 900; // px — lower reads as a sharper tilt

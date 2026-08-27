@@ -36,7 +36,7 @@ export function AboutTeaser() {
         }}
       />
 
-      <div className="relative mx-auto flex min-h-[420px] max-w-7xl items-center px-6 py-[34px]">
+      <div className="relative mx-auto flex min-h-[420px] max-w-7xl items-center px-6 py-16">
         <Reveal className="max-w-[520px] text-left">
           <span className="block text-[12px] uppercase tracking-[0.2em] text-[#FF7A2E]">
             {aboutTeaser.kicker}

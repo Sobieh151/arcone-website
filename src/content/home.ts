@@ -63,36 +63,23 @@ export type ResultStat = {
 };
 
 // PLACEHOLDER — these figures are not sourced. Replace with real campaign
-// data before launch. Do not publish invented performance numbers.
-// Flip this to `false` the moment resultsStats below holds real numbers —
-// components/sections/real-results.tsx renders its "placeholder figures"
-// notice off this one flag and nothing else.
-export const resultsStatsArePlaceholder = true;
-
+// data before launch. Do not publish invented performance numbers. No
+// on-screen notice for this any more (a client-facing page isn't the
+// place for it) — this comment is the only remaining warning, so don't
+// remove it along with the numbers eventually being real.
+//
 // Render order is left to right. durationMs is also what makes the count
 // animation land in that same left-to-right sequence (see
 // useSequentialCountUp in real-results.tsx): every stat starts counting on
 // the same frame, but the shortest duration (rightmost, Campaigns) settles
 // first and the longest (leftmost, ROAS) settles last.
 export const resultsStats: ResultStat[] = [
-  { value: 240, decimals: 0, suffix: "%", label: "Average ROAS", durationMs: 2100 },
-  { value: 12.4, decimals: 1, suffix: "M", label: "Total Reach", durationMs: 1700 },
-  { value: 68, decimals: 0, suffix: "%", label: "Lead Growth", durationMs: 1300 },
-  { value: 120, decimals: 0, suffix: "+", label: "Campaigns Launched", durationMs: 900 },
+  { value: 240, decimals: 0, suffix: "%", label: "Return on Ad Spend", durationMs: 2100 },
+  { value: 12.4, decimals: 1, suffix: "M", label: "People Reached", durationMs: 1700 },
+  { value: 68, decimals: 0, suffix: "%", label: "More Qualified Leads", durationMs: 1300 },
+  { value: 120, decimals: 0, suffix: "+", label: "Campaigns Delivered", durationMs: 900 },
 ];
 
-export type Testimonial = {
-  quote: string;
-  name: string;
-  role: string;
-};
-
-// TODO: replace with real client quotes once available.
-export const testimonials: Testimonial[] = [
-  { quote: "[[ Client testimonial quote ]]", name: "[[ Client name ]]", role: "[[ Role, Company ]]" },
-  { quote: "[[ Client testimonial quote ]]", name: "[[ Client name ]]", role: "[[ Role, Company ]]" },
-  { quote: "[[ Client testimonial quote ]]", name: "[[ Client name ]]", role: "[[ Role, Company ]]" },
-];
 
 export type TrustedByClient = {
   name: string;

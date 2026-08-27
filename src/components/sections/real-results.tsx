@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Reveal } from "@/components/animations/reveal";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
-import { resultsStats, resultsStatsArePlaceholder, type ResultStat } from "@/content/home";
+import { resultsStats, type ResultStat } from "@/content/home";
 
 // Spelled out for screen readers — "240 percent Average ROAS", not "240 %
 // Average ROAS" — see `spokenPhrase` below.
@@ -102,8 +102,8 @@ export function RealResults() {
   const values = useSequentialCountUp(active, reducedMotion);
 
   return (
-    <section className="border-t border-line">
-      <div className="mx-auto max-w-7xl px-6 pb-[26px] pt-[34px]">
+    <section className="border-t border-line py-16">
+      <div className="mx-auto max-w-7xl px-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <Reveal>
             <div>
@@ -117,7 +117,7 @@ export function RealResults() {
           </Reveal>
         </div>
 
-        <div ref={statsRef} className="mt-10 grid grid-cols-2 gap-[18px] md:grid-cols-4">
+        <div ref={statsRef} className="mt-[22px] grid grid-cols-2 gap-[18px] md:grid-cols-4">
           {resultsStats.map((stat, i) => (
             <div key={stat.label} role="group" aria-label={spokenPhrase(stat)} className="min-w-0">
               <span
@@ -130,16 +130,9 @@ export function RealResults() {
               <span aria-hidden="true" className="mt-[10px] block text-[11.5px] uppercase tracking-[0.16em] text-mute">
                 {stat.label}
               </span>
-              <span aria-hidden="true" className="mt-3 block h-[2px] w-[22px] bg-arc" />
             </div>
           ))}
         </div>
-
-        {resultsStatsArePlaceholder && (
-          <p className="mt-6 text-[11px] text-[#DE9668]">
-            Placeholder figures — replace with real campaign data
-          </p>
-        )}
       </div>
     </section>
   );

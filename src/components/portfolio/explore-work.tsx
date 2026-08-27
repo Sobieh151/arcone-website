@@ -75,7 +75,7 @@ const WORK_HINT_AUTO_DISMISS_MS = 7000;
 // point. Two stops fit comfortably inside the auto-dismiss window with
 // room to actually register each one.
 const WORK_HINT_STOP_MS = 2600;
-// Percentage positions within the track, tuned to the current (520px)
+// Percentage positions within the track, tuned to the current (460px)
 // card width/spacing — the immediate right-hand neighbour, then the one
 // past it, so the hint visibly "walks" toward the edge of the row.
 const WORK_HINT_STOPS = [
@@ -247,9 +247,9 @@ export function ExploreWork() {
   const useNativeScroll = reducedMotion || isMobile;
 
   return (
-    <section className="explore-work-row relative overflow-hidden border-t border-line bg-ink py-12 sm:py-14">
+    <section className="explore-work-row relative overflow-hidden border-t border-line bg-ink py-16">
       <div className="mx-auto max-w-7xl px-6 sm:px-10">
-        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[250px_1fr]">
+        <div className="grid grid-cols-1 items-center gap-6 lg:grid-cols-[250px_1fr]">
           {/* Left column — dims when the carousel is being hovered/focused
               (see .explore-work-row:has(...) in globals.css), so whichever
               one you're actually paying attention to reads as the focus
@@ -268,13 +268,6 @@ export function ExploreWork() {
             >
               A selection of identities, campaigns and digital experiences built to move brands forward.
             </MaskReveal>
-            <Reveal delay={0.12}>
-              <Magnetic strength={0.3} className="mt-6 inline-flex">
-                <Button href="/work" variant="ghost" icon={<ArrowUpRight size={15} className="text-arc" />}>
-                  View All Work
-                </Button>
-              </Magnetic>
-            </Reveal>
           </div>
 
           {/* Carousel — the hero of this section, so it gets almost all
@@ -315,15 +308,10 @@ export function ExploreWork() {
                     onPointerCancel={onPointerCancel}
                     onKeyDown={onKeyDown}
                     className={cn(
-                      "explore-track relative h-[270px] w-full min-w-0 touch-pan-y select-none overflow-hidden",
+                      "explore-track relative h-[300px] w-full min-w-0 touch-pan-y select-none overflow-hidden",
                       isDragging && "is-dragging"
                     )}
-                    // Card width grew to 520px (from 400px); spacing has
-                    // to grow with it or adjacent cards overlap by more
-                    // than half their own width instead of just peeking
-                    // out from behind the active one. Same ~87% ratio the
-                    // 400px/350px pair originally used.
-                    style={{ "--card-spacing": "455px" } as CSSProperties}
+                    style={{ "--card-spacing": "400px" } as CSSProperties}
                   >
                     {CAROUSEL_PROJECTS.map((entry, index) => {
                       const distance = circularDistance(index, activeIndex, length);
@@ -338,7 +326,7 @@ export function ExploreWork() {
                           aria-current={isActive ? "true" : undefined}
                           tabIndex={Math.abs(distance) > 1 ? -1 : 0}
                           onClick={(e) => activate(index, e.currentTarget)}
-                          className="explore-card explore-card--desktop group w-[520px] overflow-hidden rounded-[16px] border text-left"
+                          className="explore-card explore-card--desktop group w-[460px] overflow-hidden rounded-[16px] border text-left"
                           style={
                             {
                               "--card-distance": distance,
@@ -351,13 +339,21 @@ export function ExploreWork() {
                             } as CSSProperties
                           }
                         >
-                          <div className="relative aspect-[16/10] w-full">
+                          <div className="relative aspect-[16/9] w-full">
                             <div className="absolute inset-0" style={{ background: entry.image }} />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/5 to-transparent" />
+                            {/* Darker/higher-contrast than before — the
+                                category line at via-black/5 was nearly
+                                unreadable against a light gradient this
+                                close to the card's own edge; it read as
+                                "clipped" even though it was fully
+                                on-screen. */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                            {/* p-4 = 16px on every side, including the
+                                bottom clearance below the category line. */}
                             <div className="absolute inset-x-0 bottom-0 p-4">
                               <h3 className="font-heading text-[16px] font-bold text-paper">{entry.title}</h3>
                               {isActive && (
-                                <p className="mt-1 text-[10.5px] uppercase tracking-[0.1em] text-[#B0ACA6]">
+                                <p className="mt-1 text-[10.5px] uppercase tracking-[0.1em] text-paper/70">
                                   {entry.category}
                                 </p>
                               )}
@@ -401,7 +397,7 @@ export function ExploreWork() {
 
                 {/* Dot indicators — one per project, active dot stretched
                     and lit; each is its own jump-to-index button. */}
-                <div className="mt-[18px] flex items-center justify-center gap-2">
+                <div className="mt-4 flex items-center justify-center gap-2">
                   {CAROUSEL_PROJECTS.map((entry, index) => {
                     const isActive = index === activeIndex;
                     return (
@@ -445,6 +441,20 @@ export function ExploreWork() {
             </svg>
           </div>
         </div>
+
+        {/* Closing action — moved out of the text column and down here as
+            the section's own final beat, after the carousel and (on
+            desktop) its dots, centred across the full section rather than
+            the narrower text/carousel columns above it. */}
+        <Reveal delay={0.12}>
+          <div className="mt-5 flex justify-center">
+            <Magnetic strength={0.3} className="inline-flex">
+              <Button href="/work" variant="ghost" icon={<ArrowUpRight size={15} className="text-arc" />}>
+                View All Work
+              </Button>
+            </Magnetic>
+          </div>
+        </Reveal>
       </div>
 
       <AnimatePresence>
@@ -525,13 +535,13 @@ function MobileRow({
               } as CSSProperties
             }
           >
-            <div className="relative aspect-[16/10] w-full">
+            <div className="relative aspect-[16/9] w-full">
               <div className="absolute inset-0" style={{ background: entry.image }} />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/5 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-4">
                 <h3 className="font-heading text-[16px] font-bold text-paper">{entry.title}</h3>
                 {(isActive || reducedMotion) && (
-                  <p className="mt-1 text-[10.5px] uppercase tracking-[0.1em] text-[#B0ACA6]">{entry.category}</p>
+                  <p className="mt-1 text-[10.5px] uppercase tracking-[0.1em] text-paper/70">{entry.category}</p>
                 )}
               </div>
             </div>
