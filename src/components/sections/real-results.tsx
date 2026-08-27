@@ -81,6 +81,11 @@ export function RealResults() {
   useEffect(() => {
     const el = statsRef.current;
     if (!el) return;
+    // threshold 0.2, not 0.4 — a stats row taller than 40% of a short
+    // mobile viewport could cross the old threshold late or never; 0.2 is
+    // reachable much sooner. rootMargin shrinks the effective viewport by
+    // 10% off the bottom, so the count starts a little before the row is
+    // fully in view rather than right at the literal edge.
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -88,7 +93,7 @@ export function RealResults() {
           observer.unobserve(el);
         }
       },
-      { threshold: 0.4 }
+      { threshold: 0.2, rootMargin: "0px 0px -10% 0px" }
     );
     observer.observe(el);
     return () => observer.disconnect();
