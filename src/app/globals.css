@@ -363,12 +363,12 @@ html.lenis body {
    rather than the `animate-marquee` utility because the hover slow-down
    needs its own tunable duration, not @theme's fixed 30s. */
 .marquee-mask {
-  mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
   -webkit-mask-image: linear-gradient(
     to right,
     transparent,
-    #000 10%,
-    #000 90%,
+    #000 6%,
+    #000 94%,
     transparent
   );
 }
@@ -403,26 +403,25 @@ html.lenis body {
 }
 
 /* "TRUSTED BY" label ambient aura — a soft --arc glow sitting behind the
-   text, lighting it rather than coloring it. Sized off the label's own
-   box (absolute + a relative parent sized to the label, see the
-   component): 200%/280% reads as "roughly 2x the label," bled a bit
-   taller since an ambient glow, not a flat bar, is the goal. The blur is
-   set once, statically — only opacity ever animates, never the filter
-   itself. 7s, not 6s or 8s, so it drifts in and out of phase with the
-   hero mark's own 6s glow / 8s trail pulses instead of ever
-   synchronizing into one visible shared beat. */
+   text, lighting it rather than coloring it. A fixed 120x34 box (not
+   sized off the label's own box any more — percentages of the label's
+   tall-and-narrow shape read as a vertical halo, not ambient light) reads
+   as a wide, flat glow instead. The blur is set once, statically — only
+   opacity ever animates, never the filter itself. 7s, not 6s or 8s, so it
+   drifts in and out of phase with the hero mark's own 6s glow / 8s trail
+   pulses instead of ever synchronizing into one visible shared beat. */
 .trusted-aura {
-  width: 200%;
-  height: 280%;
+  width: 120px;
+  height: 34px;
   background: radial-gradient(circle, var(--arc), transparent 70%);
   filter: blur(24px);
-  opacity: 0.18;
+  opacity: 0.2;
   animation: trusted-aura-breathe 7s ease-in-out infinite;
 }
 
 @keyframes trusted-aura-breathe {
-  0%, 100% { opacity: 0.12; }
-  50% { opacity: 0.26; }
+  0%, 100% { opacity: 0.14; }
+  50% { opacity: 0.28; }
 }
 
 /* The label's actual color stays --mute at rest — only a highlight band
@@ -479,10 +478,10 @@ html.lenis body {
     justify-content: center;
   }
 
-  /* No breathing, fixed at 15% per the brief. */
+  /* No breathing, fixed at rest opacity. */
   .trusted-aura {
     animation: none;
-    opacity: 0.15;
+    opacity: 0.2;
   }
 
   /* No sweep — animation: none leaves it parked at the base
@@ -683,6 +682,39 @@ textarea:focus-visible,
   pointer-events: none;
 }
 
+/* ------------------------------------------------------------------ */
+/* About teaser (components/about/about-teaser.tsx). No list markers on
+   the bullet list — each item draws its own dot via ::before instead, so
+   the dot can be sized/colored independently of whatever glyph the
+   browser's default list-style would use. */
+.about-bullet::before {
+  content: "";
+  display: inline-block;
+  flex: none;
+  width: 5px;
+  height: 5px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background: var(--arc);
+}
+
+/* A "moving photograph" — almost imperceptible on purpose. The pan lives
+   on this wrapper (120% width, translating within its own overflow-hidden
+   parent), not on whatever fills it, so swapping the placeholder gradient
+   for a real `next/image fill` later is a one-element change: the image
+   just becomes the thing this wrapper pans, nothing about the animation
+   itself moves. */
+@keyframes about-photo-pan {
+  from { transform: translateX(0); }
+  to { transform: translateX(-16%); }
+}
+
+.about-photo-pan {
+  width: 120%;
+  height: 100%;
+  animation: about-photo-pan 14s ease-in-out infinite alternate;
+}
+
 /* Respect the OS-level reduced-motion preference for anything not already
    covered by Framer Motion's MotionConfig or a usePrefersReducedMotion
    check (e.g. plain CSS transitions on hover states). */
@@ -694,5 +726,14 @@ textarea:focus-visible,
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* The blanket rule above still runs this animation once, at
+     ~0.01ms — landing it on the `to` keyframe (translateX(-16%)), a
+     visible one-time offset rather than the static, at-rest look "no
+     pan" asks for. Turning it off outright is what actually parks it at
+     its untransformed rest position. */
+  .about-photo-pan {
+    animation: none;
   }
 }

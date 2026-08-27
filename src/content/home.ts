@@ -30,11 +30,28 @@ export const hero = {
   secondaryCta: { label: "Explore Our Work", href: "/work" },
 };
 
-export const aboutTeaser = {
-  eyebrow: "[[ About teaser eyebrow ]]",
-  heading: "[[ About teaser heading ]]",
-  body: "[[ About teaser body — one to two sentences ]]",
-  cta: { label: "More About Us", href: "/about" },
+export type AboutTeaser = {
+  kicker: string;
+  title: string;
+  // Two lines, hard break between them — see components/about/about-teaser.tsx.
+  statement: [string, string];
+  bullets: string[];
+  cta: { label: string; href: string };
+};
+
+export const aboutTeaser: AboutTeaser = {
+  kicker: "STUDIO",
+  title: "About ARCone",
+  statement: ["Strategy meets creativity.", "Creativity meets technology."],
+  bullets: [
+    // The blueprint says 2024 and an earlier draft said 2025. Confirm the
+    // real founding year before launch — a wrong date on an About page is
+    // the kind of detail a prospective client notices.
+    "Founded [[ YEAR ]], Cairo",
+    "AI & technology integration",
+    "Egypt → KSA → MENA",
+  ],
+  cta: { label: "Our Story", href: "/about" },
 };
 
 export type ResultStat = {
@@ -75,4 +92,24 @@ export const testimonials: Testimonial[] = [
   { quote: "[[ Client testimonial quote ]]", name: "[[ Client name ]]", role: "[[ Role, Company ]]" },
   { quote: "[[ Client testimonial quote ]]", name: "[[ Client name ]]", role: "[[ Role, Company ]]" },
   { quote: "[[ Client testimonial quote ]]", name: "[[ Client name ]]", role: "[[ Role, Company ]]" },
+];
+
+// "Trusted By" marquee (components/sections/trusted-by.tsx).
+//
+// UNVERIFIED — these names came from a design mockup, not from a
+// confirmed client list. Naming a client you have not worked with is a
+// legal and reputational risk. Confirm every name before launch and
+// delete any that cannot be backed up. Fewer real names beats more
+// unverified ones.
+export const trustedByClients = [
+  "SERA",
+  "UBR",
+  "SERAC",
+  "TMG",
+  "SENSI",
+  "NILE",
+  "CITY EDGE",
+  "VOX",
+  "ELSEWEDY",
+  "ORASCOM",
 ];

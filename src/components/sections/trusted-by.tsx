@@ -1,21 +1,5 @@
 import { Fragment } from "react";
-
-// Text names, not logo files — swap/reorder here when real client logos
-// are ready. Defined at the top of the component (not content/*) per the
-// brief, since this is the one place anyone touching this ticker will
-// look for it.
-const CLIENTS = [
-  "SERA",
-  "UBR",
-  "SERAC",
-  "TMG",
-  "SENSI",
-  "NILE",
-  "CITY EDGE",
-  "VOX",
-  "ELSEWEDY",
-  "ORASCOM",
-];
+import { trustedByClients } from "@/content/home";
 
 // One lap's worth of names, middot-separated. Rendered twice inside
 // .marquee-track (see globals.css) so the container can translate
@@ -25,13 +9,15 @@ const CLIENTS = [
 // hear the client list once.
 function ClientRow({ hidden }: { hidden?: boolean }) {
   return (
-    <div className="flex shrink-0 items-center gap-6" aria-hidden={hidden || undefined}>
-      {CLIENTS.map((name, i) => (
+    <div className="flex shrink-0 items-center gap-[28px]" aria-hidden={hidden || undefined}>
+      {trustedByClients.map((name, i) => (
         <Fragment key={i}>
-          <span className="whitespace-nowrap text-sm tracking-[0.02em] text-paper/55">
+          <span
+            className="whitespace-nowrap text-[14px] font-semibold tracking-[0.08em] text-paper/85"
+          >
             {name}
           </span>
-          <span aria-hidden="true" className="text-mute/40">
+          <span aria-hidden="true" className="text-[12px] text-[#6A6864]">
             &middot;
           </span>
         </Fragment>
@@ -42,15 +28,19 @@ function ClientRow({ hidden }: { hidden?: boolean }) {
 
 export function TrustedBy() {
   return (
-    <section className="w-full overflow-hidden border-y border-line bg-ink px-6 py-6 sm:px-10">
-      <div className="marquee-row flex items-center gap-8">
+    <section className="w-full overflow-hidden border-y border-line bg-ink py-[18px]">
+      <div className="marquee-row flex items-center gap-[22px]">
         {/* `relative` + `shrink-0` gives .trusted-aura (absolute, sized
             off this box) something to anchor to and size against — see
             globals.css for why it's a separate div behind the text
-            rather than a text-shadow/filter on the label itself. */}
-        <div className="relative shrink-0">
+            rather than a text-shadow/filter on the label itself. Left
+            padding here (not on the section) is what insets the fixed
+            label from the viewport edge — the scrolling marquee to its
+            right bleeds all the way to the edge on purpose, since
+            .marquee-mask's own fade already handles that transition. */}
+        <div className="relative shrink-0 pl-[24px]">
           <div aria-hidden="true" className="trusted-aura pointer-events-none absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2" />
-          <span className="trusted-label relative font-mono text-[11px] uppercase tracking-[0.18em]">
+          <span className="trusted-label relative font-mono text-[12px] font-semibold uppercase tracking-[0.18em]">
             Trusted By
           </span>
         </div>
@@ -59,7 +49,7 @@ export function TrustedBy() {
             so it fades the edges of what's visible rather than the
             (much wider) scrolling content underneath it. */}
         <div className="marquee-mask relative min-w-0 flex-1 overflow-hidden">
-          <div className="marquee-track flex w-fit gap-6">
+          <div className="marquee-track flex w-fit gap-[28px]">
             <ClientRow />
             <ClientRow hidden />
           </div>
