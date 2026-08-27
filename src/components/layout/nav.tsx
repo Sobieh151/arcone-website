@@ -4,13 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ArcMarkGlyph } from "@/components/icons/arc-mark";
 import { mainNav } from "@/content/navigation";
 import { primaryCta } from "@/content/shared";
 import { useLenis } from "@/components/providers/smooth-scroll";
 import { Button } from "@/components/buttons/button";
+import { IconButton } from "@/components/buttons/icon-button";
 import { Magnetic } from "@/components/buttons/magnetic";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { useMarkSpin } from "@/lib/use-mark-spin";
@@ -124,11 +125,10 @@ export function Nav() {
           y: navHideTransition,
         }}
       >
-        <nav
-          className="mx-auto flex w-full max-w-[1400px] items-center justify-between rounded-full border border-border px-3 py-2 backdrop-blur-md"
-          style={{ background: "rgba(5, 5, 5, 0.7)" }}
-        >
-          <Link href="/" data-cursor-hover aria-label="ARCone" className="rounded-full p-1.5" onFocus={onMarkFocus}>
+        <nav className="mx-auto grid w-full max-w-[1400px] grid-cols-[1fr_auto_1fr] items-center">
+          {/* LEFT — the mark alone, sitting directly on the page (no
+              pill/background of its own). */}
+          <Link href="/" data-cursor-hover aria-label="ARCone" className="justify-self-start" onFocus={onMarkFocus}>
             {/* Pointer/click handlers live on this span (the actual spin
                 target, matching the ref) rather than the Link — a click
                 still bubbles up and navigates normally, this just also
@@ -137,7 +137,7 @@ export function Nav() {
                 fire when Tab lands on the anchor around it. */}
             <span
               ref={markSpinRef}
-              className="block h-[26px] w-[26px]"
+              className="block h-[30px] w-[30px]"
               onPointerEnter={onMarkPointerEnter}
               onPointerMove={onMarkPointerMove}
               onPointerLeave={onMarkPointerLeave}
@@ -147,54 +147,57 @@ export function Nav() {
             </span>
           </Link>
 
-          <ul className="hidden items-center gap-1 md:flex">
-            {mainNav.map((link) => {
-              const active = pathname === link.href || pathname?.startsWith(`${link.href}/`);
-              return (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    data-cursor-hover
-                    aria-current={active ? "page" : undefined}
-                    className={cn(
-                      "relative rounded-full px-4 py-2 text-sm transition-colors",
-                      active ? "text-white" : "text-gray-light hover:text-white"
-                    )}
-                  >
-                    {active && (
-                      <motion.span
-                        layoutId="nav-pill"
-                        className="absolute inset-0 rounded-full bg-white/8"
-                        transition={navPillTransition}
-                      />
-                    )}
-                    <span className="relative">{link.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-
-          <div className="flex items-center gap-2">
-            {/* Always visible, including mobile — the far-right CTA sits
-                right next to the menu toggle at every breakpoint. */}
+          {/* CENTRE — links and the CTA together in one pill, width fits
+              its own content rather than stretching full-width. Hidden
+              below md: there's no room for a whole pill of links at
+              mobile widths, so the menu toggle on the right is the only
+              way in there — see "opens the full menu at every
+              breakpoint" below for why that toggle isn't itself
+              md:hidden the way this pill is. */}
+          <div className="nav-pill hidden items-center gap-1 justify-self-center md:flex">
+            <ul className="flex items-center">
+              {mainNav.map((link) => {
+                const active = pathname === link.href || pathname?.startsWith(`${link.href}/`);
+                return (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      data-cursor-hover
+                      aria-current={active ? "page" : undefined}
+                      className={cn("nav-link relative block rounded-full", active && "nav-link--active")}
+                    >
+                      {active && (
+                        <motion.span
+                          layoutId="nav-pill"
+                          className="absolute inset-0 rounded-full bg-white/8"
+                          transition={navPillTransition}
+                        />
+                      )}
+                      <span className="relative">{link.label}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
             <Magnetic strength={0.3} className="inline-flex">
-              <Button href={primaryCta.href} size="sm">
+              <Button href={primaryCta.href} size="sm" icon={<ArrowUpRight size={14} />}>
                 {primaryCta.label}
               </Button>
             </Magnetic>
-            <button
-              type="button"
-              aria-label="Toggle menu"
-              aria-expanded={menuOpen}
-              aria-controls={MOBILE_MENU_ID}
-              data-cursor-hover
-              className="grid h-11 w-11 place-items-center rounded-full text-white md:hidden"
-              onClick={() => setMenuOpen((v) => !v)}
-            >
-              {menuOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
           </div>
+
+          {/* RIGHT — always visible (not md:hidden the way the old
+              mobile-only trigger was): opens the same full-screen menu
+              at every breakpoint, not just when the centre pill's links
+              are hidden. */}
+          <IconButton
+            aria-label="Toggle menu"
+            aria-expanded={menuOpen}
+            aria-controls={MOBILE_MENU_ID}
+            className="justify-self-end"
+            onClick={() => setMenuOpen((v) => !v)}
+            icon={menuOpen ? <X size={18} /> : <Menu size={18} />}
+          />
         </nav>
       </motion.header>
 
@@ -207,7 +210,7 @@ export function Nav() {
             animate="visible"
             exit="exit"
             transition={mobileMenuTransition}
-            className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-10 backdrop-blur-xl md:hidden"
+            className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-10 backdrop-blur-xl"
             style={{ background: "rgba(5, 5, 5, 0.97)" }}
           >
             <ul className="flex flex-col items-center gap-2">
@@ -223,7 +226,7 @@ export function Nav() {
                 </li>
               ))}
             </ul>
-            <Button href={primaryCta.href} className="w-fit">
+            <Button href={primaryCta.href} className="w-fit" icon={<ArrowUpRight size={16} />}>
               {primaryCta.label}
             </Button>
           </motion.div>

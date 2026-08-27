@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import { Reveal } from "@/components/animations/reveal";
 import { GlassCard } from "@/components/animations/glass-card";
+import { IconButton } from "@/components/buttons/icon-button";
 import { testimonials as quotes } from "@/content/home";
 
 export function Testimonials() {
@@ -45,15 +46,7 @@ export function Testimonials() {
         </GlassCard>
 
         <div className="mt-10 flex items-center justify-center gap-4">
-          <button
-            type="button"
-            onClick={prev}
-            data-cursor-hover
-            aria-label="Previous testimonial"
-            className="grid h-11 w-11 place-items-center rounded-full border border-border text-white transition-colors hover:border-orange hover:text-orange-highlight"
-          >
-            <ChevronLeft size={18} />
-          </button>
+          <IconButton aria-label="Previous testimonial" onClick={prev} icon={<ChevronLeft size={18} />} />
           <div className="flex items-center gap-2">
             {quotes.map((q, i) => (
               <button
@@ -73,15 +66,7 @@ export function Testimonials() {
               />
             ))}
           </div>
-          <button
-            type="button"
-            onClick={next}
-            data-cursor-hover
-            aria-label="Next testimonial"
-            className="grid h-11 w-11 place-items-center rounded-full border border-border text-white transition-colors hover:border-orange hover:text-orange-highlight"
-          >
-            <ChevronRight size={18} />
-          </button>
+          <IconButton aria-label="Next testimonial" onClick={next} icon={<ChevronRight size={18} />} />
         </div>
       </div>
     </section>

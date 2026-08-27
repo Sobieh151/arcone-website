@@ -122,12 +122,7 @@ export function ContactForm() {
         type="submit"
         disabled={status === "submitting"}
         className="mt-4 w-fit"
-        icon={
-          <ArrowRight
-            size={16}
-            className="transition-transform group-hover:translate-x-1"
-          />
-        }
+        icon={<ArrowRight size={16} />}
       >
         {status === "submitting" ? "Sending…" : primaryCta.label}
       </Button>

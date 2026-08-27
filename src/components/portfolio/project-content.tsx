@@ -95,10 +95,7 @@ export function ProjectContent({ project, headingId }: { project: Project; headi
       {/* CTA */}
       <div className="mt-12 flex flex-col items-start gap-4 border-t border-border pt-10 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-lg text-white">[[ CTA — start a project like this one ]]</p>
-        <Button
-          href={primaryCta.href}
-          icon={<ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />}
-        >
+        <Button href={primaryCta.href} icon={<ArrowRight size={16} />}>
           {primaryCta.label}
         </Button>
       </div>

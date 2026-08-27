@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, ArrowUpRight, MousePointer2 } from "lucide-react
 import { Reveal } from "@/components/animations/reveal";
 import { MaskReveal } from "@/components/animations/mask-reveal";
 import { Button } from "@/components/buttons/button";
+import { IconButton } from "@/components/buttons/icon-button";
 import { Magnetic } from "@/components/buttons/magnetic";
 import { ProjectModal } from "@/components/portfolio/project-modal";
 import { useProjectModal } from "@/lib/use-project-modal";
@@ -269,7 +270,7 @@ export function ExploreWork() {
             </MaskReveal>
             <Reveal delay={0.12}>
               <Magnetic strength={0.3} className="mt-6 inline-flex">
-                <Button href="/work" variant="secondary" icon={<ArrowUpRight size={15} className="text-arc" />}>
+                <Button href="/work" variant="ghost" icon={<ArrowUpRight size={15} className="text-arc" />}>
                   View All Work
                 </Button>
               </Magnetic>
@@ -293,15 +294,11 @@ export function ExploreWork() {
             ) : (
               <>
                 <div className="flex items-center gap-[14px]">
-                  <button
-                    type="button"
-                    data-cursor-hover
+                  <IconButton
                     aria-label="Previous project"
                     onClick={() => advance(-1)}
-                    className="grid h-10 w-10 flex-none place-items-center rounded-full border border-[#4A4A4A] text-arc transition-colors hover:border-arc hover:bg-[rgba(255,90,26,0.12)]"
-                  >
-                    <ArrowLeft size={16} />
-                  </button>
+                    icon={<ArrowLeft size={16} />}
+                  />
 
                   <div
                     ref={trackRef}
@@ -390,15 +387,11 @@ export function ExploreWork() {
                     </AnimatePresence>
                   </div>
 
-                  <button
-                    type="button"
-                    data-cursor-hover
+                  <IconButton
                     aria-label="Next project"
                     onClick={() => advance(1)}
-                    className="grid h-10 w-10 flex-none place-items-center rounded-full border border-[#4A4A4A] text-arc transition-colors hover:border-arc hover:bg-[rgba(255,90,26,0.12)]"
-                  >
-                    <ArrowRight size={16} />
-                  </button>
+                    icon={<ArrowRight size={16} />}
+                  />
                 </div>
 
                 {/* Dot indicators — one per project, active dot stretched

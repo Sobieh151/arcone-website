@@ -24,16 +24,7 @@ export default function NotFound() {
         Even we edit ruthlessly. Let&apos;s get you back to something worth
         seeing.
       </p>
-      <Button
-        href="/"
-        className="mt-10"
-        icon={
-          <ArrowRight
-            size={16}
-            className="transition-transform group-hover:translate-x-1"
-          />
-        }
-      >
+      <Button href="/" className="mt-10" icon={<ArrowRight size={16} />}>
         Back to Home
       </Button>
     </section>

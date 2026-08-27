@@ -19,9 +19,9 @@ const ARC_PATH_D = "M160 110 Q470 4 700 46";
 const ARC_LENGTH = 620;
 const ARC_ENTRY_OFFSET = ARC_LENGTH * 0.85;
 
-const arrow = (
-  <ArrowUpRight size={15} className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-0.5" />
-);
+// No hover-translate classes here — Button nudges its own icon (5px
+// right, 5px up) centrally now, for every variant, in globals.css.
+const arrow = <ArrowUpRight size={15} />;
 
 export function ContactCta() {
   const reducedMotion = usePrefersReducedMotion();
@@ -117,21 +117,15 @@ export function ContactCta() {
 
           <div className="mt-6 flex flex-wrap items-center gap-[11px]">
             <Magnetic strength={0.3} className="inline-flex">
-              <Button
-                href={contactCta.primary.href}
-                icon={arrow}
-                className="cta-wipe cta-primary-trigger relative uppercase tracking-wide"
-              >
+              {/* cta-primary-trigger: unrelated to the button's own
+                  styling — it's what .contact-cta:has(...) below keys
+                  off of to glow the arc behind this button on hover. */}
+              <Button href={contactCta.primary.href} icon={arrow} className="cta-primary-trigger">
                 {contactCta.primary.label}
               </Button>
             </Magnetic>
             <Magnetic strength={0.3} className="inline-flex">
-              <Button
-                href={contactCta.secondary.href}
-                variant="secondary"
-                icon={arrow}
-                className="cta-wipe relative border-[#4A4A4A] uppercase tracking-wide"
-              >
+              <Button href={contactCta.secondary.href} variant="ghost" icon={arrow}>
                 {contactCta.secondary.label}
               </Button>
             </Magnetic>

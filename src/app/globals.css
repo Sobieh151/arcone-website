@@ -236,62 +236,182 @@ html.lenis body {
 }
 
 /* ------------------------------------------------------------------ */
-/* Hero CTA hover: an --arc-bright surface wipes in from the leading edge,
-   a soft glow blooms, and the arrow nudges forward via the existing
-   group-hover pattern (see hero.tsx) — the label itself never moves.
-   transform + box-shadow only, no width/background-position, so it stays
-   compositor-only.
-     No `position` here, same reasoning as `.glass` above: Tailwind's own
-   utilities sit in a lower-priority cascade layer than this plain CSS, so
-   an unconditional `position: relative` would beat a call site's own
-   positioning utility regardless of source order. Callers bring `relative`
-   themselves (hero.tsx does, via className).
-     Only really visible on the outline CTA — the filled one has no
-   `background` of its own on this element (buttonStyles' `secondary`/
-   `outline` variants are border-only), so the wipe is the only fill
-   there is to see. On the filled/primary CTA, `isolation: isolate` +
-   `z-index: -1` still paint this ::before *above* that variant's own
-   `bg-orange` (negative z-index only sinks below a stacking context's
-   own background within nested descendants, not below the box's own
-   background paint), it's just invisible there because the wipe's fixed
-   --arc-bright fill already matches buttonStyles' own
-   `hover:bg-orange-highlight` target color for that variant — same
-   color painted on top of itself. */
-.cta-wipe {
-  isolation: isolate;
-  overflow: hidden;
-  transition:
-    box-shadow 0.5s var(--ease-smooth),
-    border-color 0.5s var(--ease-smooth);
+/* Button system (components/buttons/button.tsx) — three variants, one
+   shared hover-icon nudge. Each needs either a ::before wipe layer or a
+   multi-layer box-shadow, which is why these live here rather than as
+   Tailwind utility classes on the component itself. Previously this was
+   one `.cta-wipe` class every caller had to remember to add alongside
+   the Button component (and about half of them forgot); it's now
+   folded into `.btn-primary` itself, so every primary button gets it
+   automatically. */
+
+/* The icon nudges 5px right + 5px up on hover/focus, identically across
+   every variant — the label itself never moves. transform-only, so this
+   stays compositor-only regardless of which variant it's inside. */
+.btn-icon {
+  display: inline-flex;
+  transition: transform 550ms var(--ease-smooth);
 }
 
-.cta-wipe::before {
+.btn:hover .btn-icon,
+.btn:focus-visible .btn-icon {
+  transform: translate(5px, -5px);
+}
+
+/* PRIMARY — filled --arc at rest; hover wipes in a brighter gradient from
+   the left edge and blooms a glow. isolation + a negative-z-index ::before
+   is what lets the wipe sit *above* the button's own background fill
+   without an extra wrapper element — same technique as .btn-ghost below,
+   filling with a gradient instead of a flat color. */
+.btn-primary {
+  background: var(--arc);
+  isolation: isolate;
+  overflow: hidden;
+  transition: box-shadow 550ms var(--ease-smooth);
+}
+
+.btn-primary::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: var(--arc-bright);
+  background: linear-gradient(90deg, var(--arc-bright), color-mix(in srgb, var(--arc-bright) 55%, white));
   transform: scaleX(0);
   transform-origin: left center;
-  transition: transform 0.5s var(--ease-smooth);
+  transition: transform 550ms var(--ease-smooth);
 }
 
-.cta-wipe:hover,
-.cta-wipe:focus-visible {
-  /* Beats buttonStyles' own `hover:border-white/30` + `text-white`
-     (Tailwind utilities, lower-priority layer than this plain CSS): the
-     outline CTA's border matches the fill wiping in behind it instead of
-     staying paper-tinted, and the label goes dark for the same reason the
-     filled CTA is already `text-black` on its own orange base — --paper
-     on --arc-bright is ~2.3:1, well under AA; --ink on it is ~7:1. */
-  border-color: var(--arc-bright);
-  color: var(--ink);
-  box-shadow: 0 0 32px rgba(255, 74, 13, 0.35);
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  box-shadow: 0 0 40px rgba(255, 90, 26, 0.5);
 }
 
-.cta-wipe:hover::before,
-.cta-wipe:focus-visible::before {
+.btn-primary:hover::before,
+.btn-primary:focus-visible::before {
   transform: scaleX(1);
+}
+
+/* GLASS — translucent + blurred, for a CTA sitting on top of imagery (the
+   hero's secondary CTA) where a solid fill would fight the scene behind
+   it. The base box-shadow already carries two layers (a top light edge, an
+   outer bloom); the hover rule has to repeat both alongside the two new
+   ones (an orange rim + glow) since box-shadow doesn't merge across
+   rules — whichever rule applies replaces the whole stack, not just
+   what changed. */
+.btn-glass {
+  background: rgba(12, 12, 12, 0.72);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--paper);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 8px 40px rgba(0, 0, 0, 0.5);
+  transition:
+    border-color 400ms var(--ease-smooth),
+    box-shadow 400ms var(--ease-smooth);
+}
+
+.btn-glass:hover,
+.btn-glass:focus-visible {
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 8px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 90, 26, 0.3),
+    0 0 30px rgba(255, 90, 26, 0.2);
+}
+
+/* GHOST — outline only; --paper fills in from the left on hover and the
+   label flips to --ink. Same wipe technique as .btn-primary above, just
+   filling with a flat --paper instead of a gradient. */
+.btn-ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--paper);
+  isolation: isolate;
+  overflow: hidden;
+  transition:
+    color 400ms var(--ease-smooth),
+    border-color 400ms var(--ease-smooth);
+}
+
+.btn-ghost::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--paper);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 400ms var(--ease-smooth);
+}
+
+.btn-ghost:hover,
+.btn-ghost:focus-visible {
+  color: var(--ink);
+  border-color: var(--paper);
+}
+
+.btn-ghost:hover::before,
+.btn-ghost:focus-visible::before {
+  transform: scaleX(1);
+}
+
+/* Icon buttons (components/buttons/icon-button.tsx) — the nav's menu
+   toggle and every carousel prev/next arrow (Explore Work, the
+   case-study slider, testimonials) share this one style instead of each
+   hand-rolling its own bespoke circle. */
+.icon-btn {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: transparent;
+  color: var(--paper);
+  outline: none;
+  transition:
+    border-color 300ms var(--ease-smooth),
+    background-color 300ms var(--ease-smooth);
+}
+
+.icon-btn:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.icon-btn:focus-visible {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  outline: 2px solid var(--arc-bright);
+  outline-offset: 3px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Navigation (components/layout/nav.tsx) — three parts across the top:
+   the ARCone mark alone on the left (no container of its own), a single
+   pill in the centre holding the nav links and the CTA together, and the
+   circular menu toggle (.icon-btn above) on the right, which opens the
+   full-screen menu at every breakpoint, not only on mobile. */
+.nav-pill {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(10, 10, 10, 0.5);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  padding: 6px;
+}
+
+.nav-link {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(247, 245, 242, 0.75);
+  padding: 12px 20px;
+  transition: color 300ms var(--ease-smooth);
+}
+
+.nav-link:hover,
+.nav-link--active {
+  color: var(--paper);
 }
 
 /* ------------------------------------------------------------------ */

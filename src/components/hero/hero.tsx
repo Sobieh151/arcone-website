@@ -16,7 +16,9 @@ import { useAppReady } from "@/components/providers/app-ready";
 import { HeroScene, ArcMark, AuraHook } from "@/components/hero/hero-background";
 import { TrustedBy } from "@/components/sections/trusted-by";
 
-const arrow = <ArrowUpRight size={16} className="transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-0.5" />;
+// No hover-translate classes here any more — Button now nudges its own
+// icon (5px right, 5px up) for every variant, centrally, in globals.css.
+const arrow = <ArrowUpRight size={16} />;
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -201,21 +203,15 @@ function CtaButtons() {
   return (
     <>
       <Magnetic className="w-full sm:w-auto">
-        <Button
-          href={hero.primaryCta.href}
-          icon={arrow}
-          className="cta-wipe relative w-full uppercase tracking-wide sm:w-auto"
-        >
+        <Button href={hero.primaryCta.href} icon={arrow} className="w-full sm:w-auto">
           {hero.primaryCta.label}
         </Button>
       </Magnetic>
       <Magnetic className="w-full sm:w-auto">
-        <Button
-          href={hero.secondaryCta.href}
-          variant="secondary"
-          icon={arrow}
-          className="cta-wipe relative w-full uppercase tracking-wide sm:w-auto"
-        >
+        {/* glass, not ghost — this CTA sits on the hero's own scene
+            (background.tsx / the ARC mark), where a plain outline would
+            fight the imagery behind it. */}
+        <Button href={hero.secondaryCta.href} variant="glass" icon={arrow} className="w-full sm:w-auto">
           {hero.secondaryCta.label}
         </Button>
       </Magnetic>

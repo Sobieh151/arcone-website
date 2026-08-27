@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import type { Project } from "@/data/projects";
 import { useFocusTrap } from "@/lib/use-focus-trap";
 import { ProjectContent } from "@/components/portfolio/project-content";
+import { IconButton } from "@/components/buttons/icon-button";
 
 /**
  * Case-study content as a modal overlay — still how Explore Work's cards
@@ -67,15 +68,12 @@ export function ProjectModal({
         onClick={(e) => e.stopPropagation()}
         className="glass relative my-auto w-full max-w-4xl rounded-3xl p-6 sm:p-10"
       >
-        <button
-          type="button"
-          onClick={onClose}
-          data-cursor-hover
+        <IconButton
           aria-label="Close case study"
-          className="absolute right-5 top-5 z-10 grid h-10 w-10 place-items-center rounded-full border border-border bg-bg text-white transition-colors hover:border-orange hover:text-orange-highlight"
-        >
-          <X size={18} />
-        </button>
+          onClick={onClose}
+          icon={<X size={18} />}
+          className="absolute right-5 top-5 z-10"
+        />
 
         <ProjectContent project={project} headingId="project-modal-title" />
       </motion.div>

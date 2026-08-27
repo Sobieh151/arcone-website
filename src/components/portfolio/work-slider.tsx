@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { Project } from "@/data/projects";
+import { IconButton } from "@/components/buttons/icon-button";
 
 function placeholderSlide(color: string, i: number) {
   return `radial-gradient(circle at ${30 + i * 18}% ${30 + i * 14}%, ${color}55, transparent 60%), linear-gradient(160deg, #0b0b0b, #000)`;
@@ -37,24 +38,18 @@ export function WorkSlider({ project }: { project: Project }) {
 
         {slides.length > 1 && (
           <>
-            <button
-              type="button"
-              data-cursor-hover
+            <IconButton
               aria-label="Previous visual"
               onClick={() => setIndex((i) => (i - 1 + slides.length) % slides.length)}
-              className="absolute left-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-[#4A4A4A] bg-ink/70 text-arc backdrop-blur-sm transition-colors hover:border-arc hover:bg-[rgba(255,90,26,0.12)]"
-            >
-              <ArrowLeft size={16} />
-            </button>
-            <button
-              type="button"
-              data-cursor-hover
+              icon={<ArrowLeft size={16} />}
+              className="absolute left-3 top-1/2 -translate-y-1/2 backdrop-blur-sm"
+            />
+            <IconButton
               aria-label="Next visual"
               onClick={() => setIndex((i) => (i + 1) % slides.length)}
-              className="absolute right-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-[#4A4A4A] bg-ink/70 text-arc backdrop-blur-sm transition-colors hover:border-arc hover:bg-[rgba(255,90,26,0.12)]"
-            >
-              <ArrowRight size={16} />
-            </button>
+              icon={<ArrowRight size={16} />}
+              className="absolute right-3 top-1/2 -translate-y-1/2 backdrop-blur-sm"
+            />
           </>
         )}
       </div>
