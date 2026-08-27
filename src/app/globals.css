@@ -790,23 +790,44 @@ textarea:focus-visible,
    first, behind the content), so a plain `~` sibling selector couldn't
    reach backwards from the button to it, but `:has()` matches upward from
    their shared section regardless of which one comes first. */
+/* The whole arc graphic (both paths — the faint always-on guide line and
+   the bright scroll-drawn one) lives inside this one <svg>, which is
+   what actually gates visibility now: opacity 0 here, faded to 1 by the
+   same GSAP timeline that drives the draw-in (contact-cta.tsx), on the
+   same scrollTrigger, at the same position — so there's no frame where
+   the section merely exists in the DOM (e.g. before a real scroll event
+   has ever fired: initial load, a layout shift, a screenshot tool
+   resizing the viewport) but the arc is already painted at whatever
+   position it happens to occupy then. explicit overflow: hidden, not
+   just relying on the section's own — this is the element whose
+   viewBox/preserveAspectRatio actually place the path, so it's the one
+   that has to clip it too. */
+.cta-arc-svg {
+  opacity: 0;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Reduced motion skips the GSAP effect entirely (contact-cta.tsx) —
+     nothing ever animates this to opacity: 1, so it has to start there. */
+  .cta-arc-svg {
+    opacity: 1;
+  }
+}
+
 /* filter is deliberately NOT in the transition list — animating
    drop-shadow (a blur under the hood) over 500ms would repaint this
    element on every frame of the hover transition; only opacity, which is
    compositor-only, eases. The drop-shadow itself still appears/disappears
    on hover, it just snaps instead of fading in — see the 60fps-audit
-   note: "every blur must be set once statically." will-change hints the
-   scroll-scrubbed stroke-dashoffset (driven from contact-cta.tsx via
-   GSAP ScrollTrigger, not declared here) — a genuinely compositor-only
-   equivalent for "reveal a path progressively as you scroll" doesn't
-   exist (clip-path/mask animations still require re-clipping per frame
-   too), so this is a hint, not a fix; the affected paint area is a thin
-   2.5px stroke, not a full-viewport surface, which keeps the actual cost
-   small regardless. */
+   note: "every blur must be set once statically." No will-change here
+   any more — promoting this to its own compositor layer was what let a
+   hard viewport resize (see .cta-arc-svg above) show a stale, already-
+   painted frame of it at the wrong position for a moment; a thin 2.5px
+   stroke is cheap enough to repaint plainly. */
 .cta-arc-draw {
   opacity: 0.75;
   transition: opacity 500ms var(--ease-smooth);
-  will-change: stroke-dashoffset;
 }
 
 .contact-cta:has(.cta-primary-trigger:hover, .cta-primary-trigger:focus-visible) .cta-arc-draw {

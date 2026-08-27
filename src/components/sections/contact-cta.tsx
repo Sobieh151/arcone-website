@@ -26,23 +26,33 @@ const arrow = (
 export function ContactCta() {
   const reducedMotion = usePrefersReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
+  const arcSvgRef = useRef<SVGSVGElement>(null);
   const drawPathRef = useRef<SVGPathElement>(null);
 
   useEffect(() => {
-    if (reducedMotion || !sectionRef.current || !drawPathRef.current) return;
+    if (reducedMotion || !sectionRef.current || !arcSvgRef.current || !drawPathRef.current) return;
 
     gsap.registerPlugin(ScrollTrigger);
     const ctx = gsap.context(() => {
       // Tied to scroll position (scrub), not a timer — the arc draws as
       // the user arrives at the section rather than playing on its own
       // clock. `start`/`end` are what put "~15% drawn on entry, fully
-      // closed once centred" at the two ends of the scrubbed range: the
-      // path's own initial stroke-dashoffset (set below, in the JSX) is
-      // already the 15%-drawn value, so this only has to animate the
-      // remaining stretch to 0.
-      gsap.to(drawPathRef.current, {
-        strokeDashoffset: 0,
-        ease: "none",
+      // closed once centred" at the two ends of the scrubbed range.
+      //
+      // The whole arc graphic (.cta-arc-svg, both paths) starts at
+      // opacity 0 in CSS — genuinely invisible, not just "0% drawn" —
+      // and this timeline is what proves the section is actually in
+      // view before painting anything: opacity and the reveal
+      // stroke-dashoffset animate on the SAME timeline/scrollTrigger, at
+      // the same position (0), so there's never a frame where one has
+      // updated for the current scroll position and the other hasn't.
+      // This is what closed the bug where a bare page resize (a
+      // fullPage screenshot, or any layout shift before the browser has
+      // run a real scroll frame) could show the arc's rest state — 15%
+      // drawn, fully opaque — at whatever position the section happened
+      // to occupy at that moment, before ScrollTrigger had a scroll
+      // event to compute a real progress value from.
+      const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
           start: "top bottom",
@@ -50,6 +60,8 @@ export function ContactCta() {
           scrub: true,
         },
       });
+      tl.fromTo(arcSvgRef.current, { opacity: 0 }, { opacity: 1, ease: "none" }, 0);
+      tl.fromTo(drawPathRef.current, { strokeDashoffset: ARC_ENTRY_OFFSET }, { strokeDashoffset: 0, ease: "none" }, 0);
     }, sectionRef);
 
     return () => ctx.revert();
@@ -67,10 +79,11 @@ export function ContactCta() {
           which is why this is aria-hidden rather than carrying any text
           of its own. */}
       <svg
+        ref={arcSvgRef}
         viewBox="0 0 700 110"
         preserveAspectRatio="none"
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 h-full w-full"
+        className="cta-arc-svg pointer-events-none absolute inset-0 h-full w-full overflow-hidden"
       >
         <path d={ARC_PATH_D} fill="none" stroke="var(--arc)" strokeWidth="1.5" strokeOpacity="0.2" />
         <path
