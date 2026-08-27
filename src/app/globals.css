@@ -600,6 +600,89 @@ textarea:focus-visible,
   animation: work-hint-nudge 1.3s ease-in-out 3;
 }
 
+/* ------------------------------------------------------------------ */
+/* Capabilities orbit (components/services/services-teaser.tsx). Discrete
+   hover/focus state -> CSS custom properties written per-node from React
+   (--node-opacity, --node-scale, --node-border, --node-bg, --node-glow,
+   --node-icon-rotate, --node-name-color) — same pattern as .explore-card:
+   a value per hovered/idle state, changed only on hover/focus, never
+   per-frame. The transitions below are what actually animate the move
+   between states. */
+.capabilities-node {
+  opacity: var(--node-opacity, 1);
+  transition: opacity 550ms var(--ease-smooth);
+}
+
+.capabilities-node-icon {
+  transform: scale(var(--node-scale, 1));
+  border-color: var(--node-border, rgba(255, 90, 26, 0.6));
+  background: var(--node-bg, rgba(5, 5, 5, 0.96));
+  box-shadow: var(--node-glow, none);
+  transition:
+    transform 550ms var(--ease-smooth),
+    border-color 550ms var(--ease-smooth),
+    background-color 550ms var(--ease-smooth),
+    box-shadow 550ms var(--ease-smooth);
+}
+
+.capabilities-node-icon-mark {
+  transform: rotate(var(--node-icon-rotate, 0deg));
+  transition: transform 550ms var(--ease-smooth);
+}
+
+.capabilities-node-name {
+  color: var(--node-name-color, var(--paper));
+  transition: color 550ms var(--ease-smooth);
+}
+
+/* The big centre mark's rotation — transform-origin in the orbit SVG's
+   own 720x400 user-space units (matching the ellipses' shared cx/cy),
+   not CSS pixels of the rendered page; SVG child elements resolve CSS
+   transform-origin against their nearest viewBox by default. */
+.capabilities-centre-mark {
+  transform: rotate(var(--mark-rotate, 0deg));
+  transform-origin: 360px 180px;
+  transition: transform 900ms var(--ease-smooth);
+}
+
+/* Mouse parallax — a discrete "snap toward target, smoothed by this
+   transition" rather than a per-frame lerp (unlike the hero's own
+   parallax): explore-work.tsx-style direct `el.style.transform` writes
+   on pointermove, this transition is what makes each write glide instead
+   of jump. Only the SVG moves; the floor grid and the node buttons don't. */
+.capabilities-orbit-svg {
+  transition: transform 600ms var(--ease-smooth);
+}
+
+/* A light travelling the ring — same construction as the hero's original
+   light trail: a fixed-length dash (stroke-dasharray) whose offset is
+   animated all the way around a static-shaped stroke, so the browser
+   repositions it as a plain paint update rather than re-stroking the
+   path's geometry every frame. */
+@keyframes capabilities-orbit-travel {
+  from { stroke-dashoffset: 1118; }
+  to { stroke-dashoffset: 0; }
+}
+
+.capabilities-orbit-light {
+  animation: capabilities-orbit-travel 11s linear infinite;
+}
+
+/* Static — no animation, no reduced-motion branch needed. perspective()
+   as a transform *function* (not the `perspective` property) gives just
+   this one element its own 3D vanishing point with no
+   transform-style: preserve-3d needed on an ancestor. */
+.capabilities-floor-grid {
+  background-image: repeating-radial-gradient(
+    ellipse at 50% 52%,
+    rgba(255, 100, 30, 0.16) 0 1px,
+    transparent 1px 32px
+  );
+  transform: perspective(900px) rotateX(68deg) scale(1.2);
+  opacity: 0.2;
+  pointer-events: none;
+}
+
 /* Respect the OS-level reduced-motion preference for anything not already
    covered by Framer Motion's MotionConfig or a usePrefersReducedMotion
    check (e.g. plain CSS transitions on hover states). */

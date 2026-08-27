@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 // The ARCone mark: three crossing bars at 60deg intervals, each bar lit as
 // two gradient faces for a 3D bevel, with a dark wedge where they overlap
 // at the centre. Geometry and gradients are defined ONCE here as an SVG
@@ -74,9 +76,27 @@ export function ArcMarkSprite() {
   );
 }
 
-export function ArcMarkGlyph({ className }: { className?: string }) {
+export function ArcMarkGlyph({
+  className,
+  style,
+  "aria-hidden": ariaHidden,
+}: {
+  className?: string;
+  style?: CSSProperties;
+  /** Pass `true` when this glyph sits inside an element that already has
+   * its own accessible name (e.g. a labelled button) — otherwise this
+   * mark's own "ARCone" name gets announced a second time on top of it. */
+  "aria-hidden"?: boolean;
+}) {
   return (
-    <svg viewBox={ARC_MARK_VIEWBOX} className={className} role="img" aria-label="ARCone">
+    <svg
+      viewBox={ARC_MARK_VIEWBOX}
+      className={className}
+      style={style}
+      role={ariaHidden ? undefined : "img"}
+      aria-label={ariaHidden ? undefined : "ARCone"}
+      aria-hidden={ariaHidden}
+    >
       <use href="#arc-mark" />
     </svg>
   );

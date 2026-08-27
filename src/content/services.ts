@@ -4,6 +4,12 @@
 // Restructured around ARCone's five capabilities. Names are final; every
 // description/deliverable below is a [[ placeholder ]] for the copy pass —
 // see the project plan for the placeholder-copy rule.
+//
+// `angle` and `microLabel` feed the homepage orbit layout
+// (components/services/services-teaser.tsx): `angle` places the node on
+// the orbit ellipse (0deg = right, sweeping clockwise since SVG's y-axis
+// grows downward — 90deg lands at bottom-centre, which is why Web & App
+// anchors there), `microLabel` is the short line under each node's name.
 
 export type Service = {
   slug: string;
@@ -11,6 +17,8 @@ export type Service = {
   shortName: string;
   description: string;
   deliverables: string[];
+  angle: number;
+  microLabel: string;
 };
 
 export const services: Service[] = [
@@ -24,6 +32,8 @@ export const services: Service[] = [
       "[[ Deliverable ]]",
       "[[ Deliverable ]]",
     ],
+    angle: 162,
+    microLabel: "Strategy / Growth",
   },
   {
     slug: "media-production",
@@ -35,6 +45,8 @@ export const services: Service[] = [
       "[[ Deliverable ]]",
       "[[ Deliverable ]]",
     ],
+    angle: 234,
+    microLabel: "Film / Content",
   },
   {
     slug: "branding",
@@ -46,6 +58,8 @@ export const services: Service[] = [
       "[[ Deliverable ]]",
       "[[ Deliverable ]]",
     ],
+    angle: 306,
+    microLabel: "Identity / Systems",
   },
   {
     slug: "web-app",
@@ -57,6 +71,8 @@ export const services: Service[] = [
       "[[ Deliverable ]]",
       "[[ Deliverable ]]",
     ],
+    angle: 90,
+    microLabel: "Digital Experience",
   },
   {
     slug: "media-activations",
@@ -68,5 +84,7 @@ export const services: Service[] = [
       "[[ Deliverable ]]",
       "[[ Deliverable ]]",
     ],
+    angle: 18,
+    microLabel: "Experiences",
   },
 ];
