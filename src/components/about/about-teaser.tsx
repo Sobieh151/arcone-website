@@ -5,65 +5,71 @@ import { aboutTeaser } from "@/content/home";
 
 export function AboutTeaser() {
   return (
-    <section className="border-t border-line">
-      <div className="mx-auto max-w-7xl px-6 pb-[26px] pt-[34px]">
-        <div className="grid grid-cols-1 items-start gap-[26px] md:grid-cols-[1fr_1.35fr]">
-          {/* Left column */}
-          <Reveal>
-            <span className="block text-[12px] uppercase tracking-[0.2em] text-[#FF7A2E]">
-              {aboutTeaser.kicker}
-            </span>
-            <h2 className="mt-2 font-heading text-[32px] font-extrabold uppercase leading-none tracking-[-0.04em] text-paper">
-              {aboutTeaser.title}
-            </h2>
+    <section className="relative min-h-[420px] overflow-hidden border-t border-line">
+      {/* Full-bleed background — decorative for now (a gradient
+          placeholder), so it's aria-hidden with no alt text. TODO: once
+          real photography lands, drop /public/about.jpg in here as
+          `<Image src="/about.jpg" alt="…" fill className="object-cover" />`
+          in place of the gradient div below, with a real, descriptive
+          alt (and this frame stops being aria-hidden at that point) — the
+          pan (globals.css: .about-photo-pan) lives on the wrapper it
+          sits inside, not on the image itself, so nothing else here
+          needs to change. */}
+      <div aria-hidden="true" className="absolute inset-0">
+        <div
+          className="about-photo-pan relative h-full"
+          style={{
+            background: "radial-gradient(ellipse at 50% 60%, #452B1B 0%, #0D0806 65%)",
+          }}
+        />
+      </div>
 
-            <p className="mt-[14px] text-[15px] leading-[1.6] text-paper/85">
-              {aboutTeaser.statement.map((line) => (
-                <span key={line} className="block">
-                  {line}
-                </span>
-              ))}
-            </p>
+      {/* Scrim so the left-column text stays legible over the image:
+          solid from the left edge through roughly where the 520px text
+          column ends, then fading toward the image on the right. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to right, #050505 62%, rgba(5,5,5,0.5) 92%, rgba(5,5,5,0.35) 100%)",
+        }}
+      />
 
-            <ul className="mt-[18px] list-none text-[13px] leading-[2] text-paper/72">
-              {aboutTeaser.bullets.map((bullet) => (
-                <li key={bullet} className="about-bullet flex items-center">
-                  {bullet}
-                </li>
-              ))}
-            </ul>
+      <div className="relative mx-auto flex min-h-[420px] max-w-7xl items-center px-6 py-[34px]">
+        <Reveal className="max-w-[520px] text-left">
+          <span className="block text-[12px] uppercase tracking-[0.2em] text-[#FF7A2E]">
+            {aboutTeaser.kicker}
+          </span>
+          <h2 className="mt-2 font-heading text-[32px] font-extrabold uppercase leading-none tracking-[-0.04em] text-paper">
+            {aboutTeaser.title}
+          </h2>
 
-            <Link
-              href={aboutTeaser.cta.href}
-              data-cursor-hover
-              className="mt-[22px] inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.14em] text-mute transition-colors hover:text-paper"
-            >
-              {aboutTeaser.cta.label}
-              <ArrowUpRight size={14} />
-            </Link>
-          </Reveal>
+          <p className="mt-[14px] text-[15px] leading-[1.6] text-paper/85">
+            {aboutTeaser.statement.map((line) => (
+              <span key={line} className="block">
+                {line}
+              </span>
+            ))}
+          </p>
 
-          {/* Right column — a "moving photograph." Decorative for now (a
-              gradient placeholder), so it's aria-hidden with no alt text.
-              TODO: once real photography lands, swap the inner div below
-              for a `next/image fill` with a real, descriptive `alt` — the
-              pan (globals.css: .about-photo-pan) lives on the wrapper it
-              sits inside, not on the image itself, so nothing else here
-              needs to change. */}
-          <Reveal delay={0.1}>
-            <div
-              aria-hidden="true"
-              className="relative h-[150px] w-full overflow-hidden border border-[#241C17]"
-            >
-              <div
-                className="about-photo-pan relative"
-                style={{
-                  background: "radial-gradient(ellipse at 50% 60%, #452B1B 0%, #0D0806 65%)",
-                }}
-              />
-            </div>
-          </Reveal>
-        </div>
+          <ul className="mt-[18px] list-none text-[13px] leading-[2] text-paper/72">
+            {aboutTeaser.bullets.map((bullet) => (
+              <li key={bullet} className="about-bullet flex items-center">
+                {bullet}
+              </li>
+            ))}
+          </ul>
+
+          <Link
+            href={aboutTeaser.cta.href}
+            data-cursor-hover
+            className="mt-[22px] inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.14em] text-mute transition-colors hover:text-paper"
+          >
+            {aboutTeaser.cta.label}
+            <ArrowUpRight size={14} />
+          </Link>
+        </Reveal>
       </div>
     </section>
   );

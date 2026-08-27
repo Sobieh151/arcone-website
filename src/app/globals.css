@@ -677,20 +677,20 @@ textarea:focus-visible,
 }
 
 /* A "moving photograph" — almost imperceptible on purpose. The pan lives
-   on this wrapper (120% width, translating within its own overflow-hidden
+   on this wrapper (110% width, translating within its own overflow-hidden
    parent), not on whatever fills it, so swapping the placeholder gradient
    for a real `next/image fill` later is a one-element change: the image
    just becomes the thing this wrapper pans, nothing about the animation
    itself moves. */
 @keyframes about-photo-pan {
   from { transform: translateX(0); }
-  to { transform: translateX(-16%); }
+  to { transform: translateX(-8%); }
 }
 
 .about-photo-pan {
-  width: 120%;
+  width: 110%;
   height: 100%;
-  animation: about-photo-pan 14s ease-in-out infinite alternate;
+  animation: about-photo-pan 18s ease-in-out infinite alternate;
 }
 
 /* ------------------------------------------------------------------ */
