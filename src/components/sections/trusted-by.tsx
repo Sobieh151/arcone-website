@@ -1,29 +1,19 @@
-import Link from "next/link";
-import { Fragment } from "react";
 import { trustedByClients } from "@/content/home";
-import { ClientIcon } from "@/components/portfolio/client-icon";
 
-// One lap's worth of clients. Rendered twice inside .marquee-track (see
-// globals.css) so the container can translate exactly -50% of its own
-// width — precisely one lap — and loop with no seam: the second copy is
-// already sitting where the first one started. `hidden` marks the
-// duplicate `aria-hidden` (and every link in it non-tabbable) so
-// keyboard/screen-reader users only ever encounter the client list once.
+// One lap's worth of client names. Rendered twice inside .marquee-track
+// (see globals.css) so the container can translate exactly -50% of its own
+// width and loop continuously. The duplicate is aria-hidden so assistive
+// technology encounters the client list only once.
 function ClientRow({ hidden }: { hidden?: boolean }) {
   return (
     <div className="flex shrink-0 items-center gap-10" aria-hidden={hidden || undefined}>
       {trustedByClients.map((client) => (
-        <Fragment key={client.slug}>
-          <Link
-            href={`/work/${client.slug}`}
-            data-cursor-hover
-            aria-label={`View ${client.name}'s work`}
-            tabIndex={hidden ? -1 : undefined}
-            className="trusted-client shrink-0"
-          >
-            <ClientIcon client={client} />
-          </Link>
-        </Fragment>
+        <span
+          key={client.slug}
+          className="trusted-client shrink-0 font-heading text-sm font-bold uppercase tracking-[0.12em]"
+        >
+          {client.name}
+        </span>
       ))}
     </div>
   );
@@ -32,22 +22,14 @@ function ClientRow({ hidden }: { hidden?: boolean }) {
 /**
  * The bottom edge of the Hero, not a standalone section — see hero.tsx,
  * which renders this as the last thing inside its own <section> rather
- * than page.tsx rendering it as a sibling. Every client is icon-only
- * (monochrome until hovered/focused/tapped — .trusted-client-icon in
- * globals.css) and links straight to its /work/[slug] case-study page.
- * Hovering or focusing *any* icon pauses the whole track in place
- * (`.marquee-row:hover .marquee-track` — animation-play-state, not a
- * duration change, so resuming continues from the exact frame it paused
- * on with no snap); leaving the row resumes it smoothly.
+ * than page.tsx rendering it as a sibling. The names are text-only until
+ * approved logo assets are available. Hovering or focusing the row pauses
+ * the marquee in place; leaving it resumes smoothly.
  *
- * `trustedByClients` (content/home.ts) ships empty until real, confirmed
- * clients are added — this renders nothing at all while it's empty
- * rather than filling the space with placeholder logos. An empty strip
- * beats a fake one.
+ * Client names are intentionally rendered as text for now. Approved logo
+ * assets can be introduced later without changing the marquee structure.
  */
 export function TrustedBy() {
-  if (trustedByClients.length === 0) return null;
-
   return (
     <div className="trusted-by-footer relative w-full overflow-hidden border-t border-line/60 bg-ink/60 backdrop-blur-sm">
       <div className="marquee-row flex items-center gap-[22px] py-4 sm:py-5">

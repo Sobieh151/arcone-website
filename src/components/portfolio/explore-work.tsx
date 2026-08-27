@@ -75,7 +75,7 @@ const WORK_HINT_AUTO_DISMISS_MS = 7000;
 // point. Two stops fit comfortably inside the auto-dismiss window with
 // room to actually register each one.
 const WORK_HINT_STOP_MS = 2600;
-// Percentage positions within the track, tuned to the current (400px)
+// Percentage positions within the track, tuned to the current (520px)
 // card width/spacing — the immediate right-hand neighbour, then the one
 // past it, so the hint visibly "walks" toward the edge of the row.
 const WORK_HINT_STOPS = [
@@ -247,9 +247,9 @@ export function ExploreWork() {
   const useNativeScroll = reducedMotion || isMobile;
 
   return (
-    <section className="explore-work-row relative overflow-hidden border-t border-line bg-ink py-20">
+    <section className="explore-work-row relative overflow-hidden border-t border-line bg-ink py-12 sm:py-14">
       <div className="mx-auto max-w-7xl px-6 sm:px-10">
-        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[220px_1fr]">
+        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[250px_1fr]">
           {/* Left column — dims when the carousel is being hovered/focused
               (see .explore-work-row:has(...) in globals.css), so whichever
               one you're actually paying attention to reads as the focus
@@ -266,7 +266,7 @@ export function ExploreWork() {
               delay={0.06}
               className="mt-5 text-balance text-base leading-relaxed text-paper/65"
             >
-              [[ Explore Our Work — one to two sentence supporting line ]]
+              A selection of identities, campaigns and digital experiences built to move brands forward.
             </MaskReveal>
             <Reveal delay={0.12}>
               <Magnetic strength={0.3} className="mt-6 inline-flex">
@@ -318,7 +318,12 @@ export function ExploreWork() {
                       "explore-track relative h-[270px] w-full min-w-0 touch-pan-y select-none overflow-hidden",
                       isDragging && "is-dragging"
                     )}
-                    style={{ "--card-spacing": "350px" } as CSSProperties}
+                    // Card width grew to 520px (from 400px); spacing has
+                    // to grow with it or adjacent cards overlap by more
+                    // than half their own width instead of just peeking
+                    // out from behind the active one. Same ~87% ratio the
+                    // 400px/350px pair originally used.
+                    style={{ "--card-spacing": "455px" } as CSSProperties}
                   >
                     {CAROUSEL_PROJECTS.map((entry, index) => {
                       const distance = circularDistance(index, activeIndex, length);
@@ -333,7 +338,7 @@ export function ExploreWork() {
                           aria-current={isActive ? "true" : undefined}
                           tabIndex={Math.abs(distance) > 1 ? -1 : 0}
                           onClick={(e) => activate(index, e.currentTarget)}
-                          className="explore-card explore-card--desktop group w-[400px] overflow-hidden rounded-[16px] border text-left"
+                          className="explore-card explore-card--desktop group w-[520px] overflow-hidden rounded-[16px] border text-left"
                           style={
                             {
                               "--card-distance": distance,

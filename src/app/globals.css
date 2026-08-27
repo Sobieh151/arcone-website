@@ -541,36 +541,6 @@ html.lenis body {
   13.333%, 100% { background-position: -100% 0; }
 }
 
-/* Client icons (components/portfolio/client-icon.tsx) — monochrome at
-   rest, that client's real colour on hover/focus, via one CSS
-   `filter: grayscale()` toggle on the badge rather than swapping images
-   or classes. That single toggle works identically whether the content
-   underneath is the placeholder monogram or (later) a real logo image,
-   which is what "same source, no duplicate files" actually means here.
-   --client-color is written per-icon from React (project.color). */
-.trusted-client-icon {
-  border-color: rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.03);
-  filter: grayscale(1);
-  transition:
-    filter 500ms var(--ease-smooth),
-    border-color 500ms var(--ease-smooth),
-    box-shadow 500ms var(--ease-smooth),
-    transform 500ms var(--ease-smooth);
-}
-
-.trusted-client-icon-mono {
-  color: var(--paper);
-}
-
-.trusted-client:hover .trusted-client-icon,
-.trusted-client:focus-visible .trusted-client-icon {
-  filter: grayscale(0);
-  border-color: var(--client-color, var(--arc));
-  box-shadow: 0 0 22px color-mix(in srgb, var(--client-color, var(--arc)) 45%, transparent);
-  transform: scale(1.1);
-}
-
 @media (prefers-reduced-motion: reduce) {
   /* The sitewide reduced-motion rule further down already forces every
      animation-duration to ~0 and every iteration-count to 1, which would
@@ -674,7 +644,7 @@ textarea:focus-visible,
   top: 50%;
   transform:
     translate(-50%, -50%)
-    translateX(calc(var(--card-distance, 0) * var(--card-spacing, 350px) + var(--drag-offset, 0px)))
+    translateX(calc(var(--card-distance, 0) * var(--card-spacing, 455px) + var(--drag-offset, 0px)))
     scale(var(--card-scale, 1));
   z-index: var(--card-z, 1);
 }

@@ -186,18 +186,17 @@ export function Nav() {
             </Magnetic>
           </div>
 
-          {/* RIGHT — always visible (not md:hidden the way the old
-              mobile-only trigger was): opens the same full-screen menu
-              at every breakpoint, not just when the centre pill's links
-              are hidden. */}
-          <IconButton
-            aria-label="Toggle menu"
-            aria-expanded={menuOpen}
-            aria-controls={MOBILE_MENU_ID}
-            className="justify-self-end"
-            onClick={() => setMenuOpen((v) => !v)}
-            icon={menuOpen ? <X size={18} /> : <Menu size={18} />}
-          />
+          {/* The menu stays available at every breakpoint and sits with the
+              rest of the header controls rather than floating on its own. */}
+          <div className="nav-tools flex items-center justify-self-end">
+            <IconButton
+              aria-label="Toggle menu"
+              aria-expanded={menuOpen}
+              aria-controls={MOBILE_MENU_ID}
+              onClick={() => setMenuOpen((v) => !v)}
+              icon={menuOpen ? <X size={18} /> : <Menu size={18} />}
+            />
+          </div>
         </nav>
       </motion.header>
 

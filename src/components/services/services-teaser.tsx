@@ -15,7 +15,7 @@ const ORBIT_CX = 380;
 const ORBIT_CY = 215;
 const ORBIT_RX = 268;
 const ORBIT_RY = 132;
-const CENTRE_MARK_SIZE = 176;
+const CENTRE_MARK_SIZE = 136;
 // The outer halo ellipse's radii — kept at the same +20/+18 offset past
 // the main ring (ORBIT_RX/RY) it always had, so it still reads as a
 // close outer halo rather than sitting inside the now-wider ring.
