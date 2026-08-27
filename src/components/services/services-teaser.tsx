@@ -6,16 +6,21 @@ import { ArcMarkGlyph } from "@/components/icons/arc-mark";
 import { Reveal } from "@/components/animations/reveal";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
-// Every position below is computed against this one 720x400 viewBox —
+// Every position below is computed against this one 760x430 viewBox —
 // same coordinate space the SVG itself uses, so a node's `angle` maps to
 // the exact same point the ring/mark are drawn against.
-const ORBIT_VIEWBOX_WIDTH = 720;
-const ORBIT_VIEWBOX_HEIGHT = 400;
-const ORBIT_CX = 360;
-const ORBIT_CY = 180;
-const ORBIT_RX = 228;
-const ORBIT_RY = 118;
+const ORBIT_VIEWBOX_WIDTH = 760;
+const ORBIT_VIEWBOX_HEIGHT = 430;
+const ORBIT_CX = 380;
+const ORBIT_CY = 215;
+const ORBIT_RX = 268;
+const ORBIT_RY = 132;
 const CENTRE_MARK_SIZE = 176;
+// The outer halo ellipse's radii — kept at the same +20/+18 offset past
+// the main ring (ORBIT_RX/RY) it always had, so it still reads as a
+// close outer halo rather than sitting inside the now-wider ring.
+const ORBIT_HALO_RX = ORBIT_RX + 20;
+const ORBIT_HALO_RY = ORBIT_RY + 18;
 
 // Standard ellipse parametric equations, angle in degrees. SVG's y-axis
 // grows downward, so this sweeps clockwise from the positive x-axis: 0deg
@@ -145,7 +150,7 @@ export function ServicesTeaser() {
               ref={orbitRef}
               onPointerMove={onOrbitPointerMove}
               onPointerLeave={onOrbitPointerLeave}
-              className="relative mx-auto mt-12 max-w-[720px]"
+              className="relative mx-auto mt-12 max-w-[760px]"
               style={{ aspectRatio: `${ORBIT_VIEWBOX_WIDTH} / ${ORBIT_VIEWBOX_HEIGHT}` }}
             >
               <div className="capabilities-floor-grid absolute inset-0" aria-hidden="true" />
@@ -159,7 +164,7 @@ export function ServicesTeaser() {
                 aria-hidden="true"
               >
                 <ellipse cx={ORBIT_CX} cy={ORBIT_CY} rx={ORBIT_RX} ry={ORBIT_RY} stroke="#2E2E2E" strokeWidth="1" fill="none" />
-                <ellipse cx={ORBIT_CX} cy={ORBIT_CY} rx="248" ry="136" stroke="var(--arc)" strokeOpacity="0.13" strokeWidth="1" fill="none" />
+                <ellipse cx={ORBIT_CX} cy={ORBIT_CY} rx={ORBIT_HALO_RX} ry={ORBIT_HALO_RY} stroke="var(--arc)" strokeOpacity="0.13" strokeWidth="1" fill="none" />
 
                 {!reducedMotion && (
                   <ellipse
@@ -203,7 +208,7 @@ export function ServicesTeaser() {
                     onFocus={() => focusNode(service)}
                     onMouseLeave={clearNode}
                     onBlur={clearNode}
-                    className="capabilities-node absolute flex w-[136px] -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center"
+                    className="capabilities-node absolute flex w-[124px] -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center"
                     style={
                       {
                         left: pos.left,
@@ -212,22 +217,36 @@ export function ServicesTeaser() {
                       } as CSSProperties
                     }
                   >
-                    <span
-                      className="capabilities-node-icon grid h-12 w-12 place-items-center rounded-full border"
-                      style={
-                        {
-                          "--node-scale": isActive ? 1.14 : 1,
-                          "--node-border": isActive ? "var(--arc)" : "rgba(255,90,26,0.6)",
-                          "--node-bg": isActive ? "rgba(255,90,26,0.14)" : "rgba(5,5,5,0.96)",
-                          "--node-glow": isActive ? "0 0 36px rgba(255,90,26,0.36)" : "none",
-                        } as CSSProperties
-                      }
-                    >
-                      <ArcMarkGlyph
-                        aria-hidden
-                        className="capabilities-node-icon-mark h-[21px] w-[21px]"
-                        style={{ "--node-icon-rotate": isActive && !reducedMotion ? "60deg" : "0deg" } as CSSProperties}
+                    <span className="relative grid h-12 w-12 place-items-center">
+                      {/* Radial bloom behind the icon — 180% of the icon's
+                          own size, blur set once (static), only opacity
+                          ever animates. Separate element (not the icon's
+                          own box-shadow) since it needs to bleed past the
+                          icon's own rounded edge in every direction. */}
+                      <span
+                        aria-hidden="true"
+                        className="capabilities-node-bloom pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+                        style={{ "--node-bloom-opacity": isActive ? 0.9 : 0 } as CSSProperties}
                       />
+                      <span
+                        className="capabilities-node-icon relative grid h-12 w-12 place-items-center rounded-full border"
+                        style={
+                          {
+                            "--node-scale": isActive ? 1.14 : 1,
+                            "--node-border": isActive ? "var(--arc)" : "rgba(255,90,26,0.6)",
+                            "--node-bg": isActive ? "rgba(255,90,26,0.14)" : "rgba(5,5,5,0.96)",
+                            "--node-glow": isActive
+                              ? "0 0 0 1px rgba(255,90,26,0.5), 0 0 18px rgba(255,90,26,0.45), 0 0 44px rgba(255,90,26,0.28)"
+                              : "none",
+                          } as CSSProperties
+                        }
+                      >
+                        <ArcMarkGlyph
+                          aria-hidden
+                          className="capabilities-node-icon-mark h-[21px] w-[21px]"
+                          style={{ "--node-icon-rotate": isActive && !reducedMotion ? "60deg" : "0deg" } as CSSProperties}
+                        />
+                      </span>
                     </span>
                     <span
                       className="capabilities-node-name mt-2 text-[12.5px] font-bold uppercase tracking-[-0.015em]"

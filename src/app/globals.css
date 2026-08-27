@@ -583,10 +583,22 @@ textarea:focus-visible,
   background: var(--node-bg, rgba(5, 5, 5, 0.96));
   box-shadow: var(--node-glow, none);
   transition:
-    transform 550ms var(--ease-smooth),
-    border-color 550ms var(--ease-smooth),
-    background-color 550ms var(--ease-smooth),
-    box-shadow 550ms var(--ease-smooth);
+    transform 500ms var(--ease-smooth),
+    border-color 500ms var(--ease-smooth),
+    background-color 500ms var(--ease-smooth),
+    box-shadow 500ms var(--ease-smooth);
+}
+
+/* Neon bloom behind the icon — 180% of the icon box, centered on it.
+   filter is set once, statically; only opacity ever animates (a running
+   blur is the expensive one to keep repainting, not opacity). */
+.capabilities-node-bloom {
+  width: 180%;
+  height: 180%;
+  background: radial-gradient(circle, rgba(255, 90, 26, 0.55), transparent 70%);
+  filter: blur(18px);
+  opacity: var(--node-bloom-opacity, 0);
+  transition: opacity 500ms var(--ease-smooth);
 }
 
 .capabilities-node-icon-mark {
@@ -600,12 +612,13 @@ textarea:focus-visible,
 }
 
 /* The big centre mark's rotation — transform-origin in the orbit SVG's
-   own 720x400 user-space units (matching the ellipses' shared cx/cy),
-   not CSS pixels of the rendered page; SVG child elements resolve CSS
-   transform-origin against their nearest viewBox by default. */
+   own 760x430 user-space units (matching the ellipses' shared cx/cy,
+   ORBIT_CX/ORBIT_CY in the component), not CSS pixels of the rendered
+   page; SVG child elements resolve CSS transform-origin against their
+   nearest viewBox by default. */
 .capabilities-centre-mark {
   transform: rotate(var(--mark-rotate, 0deg));
-  transform-origin: 360px 180px;
+  transform-origin: 380px 215px;
   transition: transform 900ms var(--ease-smooth);
 }
 
