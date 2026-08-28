@@ -4,11 +4,21 @@
 //
 // Mixed roster right now: north-atlas/fielder/marrow/harbor-co are
 // fictional case studies (fake clients AND fake numbers) standing in
-// until real project data exists; sensi/nawel-space are real,
+// until real project data exists; sensi/nawel-space/sole are real,
 // confirmed clients whose case-study copy is still [[ placeholder ]]
 // pending the actual write-up. Don't invent specifics for the real
 // ones the way the fictional entries get to — swap in the real
 // challenge/strategy/execution/results, don't author new fake ones.
+//
+// `category` must be one of content/services.ts's five department
+// names exactly — the homepage's department rail (components/services/
+// department-work.tsx) filters this array by `category === department`,
+// so anything else here just silently never appears under any
+// department. Sensi/Nawel Space originally carried looser display
+// labels ("Campaign"/"Digital") from an earlier, non-interactive
+// version of the work section; remapped to real departments
+// (Digital Marketing / Web & App) so every department actually has
+// work to show instead of some coming up empty.
 
 export type Project = {
   slug: string;
@@ -57,7 +67,7 @@ export const projects: Project[] = [
     // name the way the fictional entries below get to.
     slug: "sensi",
     name: "Sensi",
-    category: "Campaign",
+    category: "Digital Marketing",
     industry: "[[ Sensi — industry ]]",
     year: "2025",
     summary: "[[ Sensi — one-sentence summary ]]",
@@ -75,7 +85,7 @@ export const projects: Project[] = [
     // Real client — same placeholder-copy note as Sensi above.
     slug: "nawel-space",
     name: "Nawel Space",
-    category: "Digital",
+    category: "Web & App",
     industry: "[[ Nawel Space — industry ]]",
     year: "2025",
     summary: "[[ Nawel Space — one-sentence summary ]]",
@@ -88,6 +98,25 @@ export const projects: Project[] = [
       { label: "[[ Result ]]", value: "[[ — ]]" },
     ],
     color: "#B33A02",
+  },
+  {
+    // Real client — same placeholder-copy note as Sensi/Nawel Space
+    // above. Named in the brief's own rail example alongside them.
+    slug: "sole",
+    name: "Solé",
+    category: "Media Production",
+    industry: "[[ Solé — industry ]]",
+    year: "2025",
+    summary: "[[ Solé — one-sentence summary ]]",
+    services: ["[[ Service ]]", "[[ Service ]]"],
+    challenge: "[[ Solé — challenge ]]",
+    strategy: "[[ Solé — strategy ]]",
+    execution: "[[ Solé — execution ]]",
+    results: [
+      { label: "[[ Result ]]", value: "[[ — ]]" },
+      { label: "[[ Result ]]", value: "[[ — ]]" },
+    ],
+    color: "#C4570A",
   },
   {
     slug: "fielder",

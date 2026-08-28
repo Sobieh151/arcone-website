@@ -1,6 +1,19 @@
 "use client";
 
-import { useCallback, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
+import { useCallback, useRef, useState, type KeyboardEvent, type PointerEvent, type WheelEvent } from "react";
+
+// Trackpad horizontal swipe (deltaX) advances the rail; a plain vertical
+// mouse-wheel tick (deltaY, no meaningful deltaX) does not — it's left
+// alone to scroll the page normally, same as passing over any other
+// horizontal rail on the web (Netflix, etc.). Trapping vertical wheel
+// into horizontal advance is what actually feels janky/fights the
+// visitor; this doesn't.
+const WHEEL_ADVANCE_PX = 60;
+// One advance per gesture, not one per wheel tick — a single trackpad
+// swipe fires many small deltaX events in quick succession, and without
+// this a swipe that crosses the threshold once would otherwise keep
+// re-triggering for every subsequent tick of the same gesture.
+const WHEEL_COOLDOWN_MS = 350;
 
 // Drag distance past which a release counts as "advance one card" even at
 // zero velocity (a slow, deliberate drag).
@@ -141,6 +154,35 @@ export function useCarouselDrag({
     [onAdvance, setOffset]
   );
 
+  // Cheap on purpose: a ref accumulator and a ref cooldown flag, no state
+  // — this can fire on every wheel tick during a gesture without
+  // triggering a single extra render, only `onAdvance` (already a
+  // discrete, low-frequency call) crosses into React.
+  const wheel = useRef({ accumulated: 0, cooling: false });
+
+  const onWheel = useCallback(
+    (e: WheelEvent<HTMLDivElement>) => {
+      if (disabled) return;
+      // Only a horizontally-dominant gesture counts as "swipe the rail" —
+      // a plain vertical wheel tick (deltaX ~0) is left alone so the page
+      // keeps scrolling normally instead of getting trapped here.
+      if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      if (wheel.current.cooling) return;
+
+      wheel.current.accumulated += e.deltaX;
+      if (Math.abs(wheel.current.accumulated) < WHEEL_ADVANCE_PX) return;
+
+      onAdvance(wheel.current.accumulated > 0 ? 1 : -1);
+      wheel.current.accumulated = 0;
+      wheel.current.cooling = true;
+      window.setTimeout(() => {
+        wheel.current.cooling = false;
+      }, WHEEL_COOLDOWN_MS);
+    },
+    [disabled, onAdvance]
+  );
+
   const onKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
       if (e.key === "ArrowLeft") {
@@ -169,6 +211,7 @@ export function useCarouselDrag({
     onPointerMove,
     onPointerUp: endDrag,
     onPointerCancel: endDrag,
+    onWheel,
     onKeyDown,
     consumeJustDragged,
   };
