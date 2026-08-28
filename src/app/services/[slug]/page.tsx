@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { services, type Service } from "@/content/services";
-import { projects } from "@/data/projects";
+import { clients } from "@/data/clients";
 import { capabilityIcons } from "@/components/icons/capability-icons";
 import { ContactCta } from "@/components/sections/contact-cta";
 
@@ -36,10 +36,7 @@ export default async function CapabilityPage({ params }: PageProps<"/services/[s
   if (!service) notFound();
 
   const Icon = capabilityIcons[service.slug];
-  // Project.category (data/projects.ts) is written to match a Service
-  // name exactly (see work-list.tsx's own category filter) — same
-  // capability names driving both, so this can't silently drift.
-  const relatedWork = projects.filter((project) => project.category === service.name);
+  const serviceClients = clients.filter((client) => client.services.includes(service.slug));
   const otherServices = services.filter((s) => s.slug !== service.slug);
 
   return (
@@ -103,39 +100,45 @@ export default async function CapabilityPage({ params }: PageProps<"/services/[s
           </ol>
         </section>
 
-        {/* Selected work */}
+        {/* Clients — a grid, not a list. Each tile links straight to
+            that client's own preview page (/services/[slug]/[clientSlug]);
+            there's no intermediate "selected work" summary any more. */}
         <section className="mt-16 border-t border-line pt-10">
           <h2 className="font-mono text-xs uppercase tracking-[0.18em] text-orange">
-            Selected work
+            Clients
           </h2>
-          {relatedWork.length === 0 ? (
+          {serviceClients.length === 0 ? (
             <p className="mt-6 text-sm text-mute">Work in this capability is being added.</p>
           ) : (
-            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {relatedWork.map((project) => (
+            // The 2px gap sits on a --line background, so the gap itself
+            // reads as a hairline between tiles instead of empty space —
+            // each tile needs its own opaque bg so only the gap shows it.
+            <div className="mt-6 grid grid-cols-1 gap-[2px] bg-line sm:grid-cols-2 lg:grid-cols-3">
+              {serviceClients.map((client) => (
                 <Link
-                  key={project.slug}
-                  href={`/work/${project.slug}`}
+                  key={client.slug}
+                  href={`/services/${service.slug}/${client.slug}`}
                   data-cursor-hover
-                  className="group relative isolate overflow-hidden rounded-2xl border border-line p-6"
+                  className="group relative isolate block aspect-[4/3] overflow-hidden bg-ink transition-shadow duration-300 hover:shadow-[0_0_0_1px_rgba(255,90,26,0.4)]"
                 >
-                  <div
-                    className="absolute inset-0 -z-10 transition-transform duration-700 ease-out group-hover:scale-105"
-                    style={{
-                      background: `radial-gradient(circle at 75% 25%, ${project.color}40, transparent 55%), linear-gradient(180deg, #050505, #000)`,
-                    }}
+                  {/* eslint-disable-next-line @next/next/no-img-element -- real client-supplied asset under public/clients/, not swappable via next/image's own optimizer config here */}
+                  <img
+                    src={client.cover}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                   />
-                  <span className="text-xs uppercase tracking-widest text-orange">
-                    {project.category} &middot; {project.year}
-                  </span>
-                  <h3 className="mt-3 font-heading text-2xl font-bold text-paper transition-colors group-hover:text-orange">
-                    {project.name}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-mute">{project.summary}</p>
-                  <span className="mt-4 inline-flex items-center gap-2 text-sm text-paper">
-                    View Case Study
-                    <ArrowUpRight size={15} />
-                  </span>
+                  <div
+                    className="pointer-events-none absolute inset-0"
+                    style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 35%, transparent 65%)" }}
+                  />
+                  <div className="absolute inset-x-0 bottom-0 p-4">
+                    <p className="font-heading text-[16px] font-bold text-paper/75 transition-colors duration-300 group-hover:text-paper">
+                      {client.name}
+                    </p>
+                    <p className="mt-1 text-[10.5px] uppercase tracking-[0.1em] text-mute">
+                      {client.images.length} {client.images.length === 1 ? "project" : "projects"}
+                    </p>
+                  </div>
                 </Link>
               ))}
             </div>

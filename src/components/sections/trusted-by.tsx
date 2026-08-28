@@ -30,6 +30,11 @@ function ClientRow({ hidden }: { hidden?: boolean }) {
  * assets can be introduced later without changing the marquee structure.
  */
 export function TrustedBy() {
+  // An empty strip beats a fake one — render nothing at all rather than
+  // an empty-but-still-styled marquee row while trustedByClients is
+  // empty (see content/home.ts for why it's shipping empty right now).
+  if (trustedByClients.length === 0) return null;
+
   return (
     <div className="trusted-by-footer relative w-full overflow-hidden border-t border-line/60 bg-ink/60 backdrop-blur-sm">
       <div className="marquee-row flex items-center gap-[22px] py-4 sm:py-5">

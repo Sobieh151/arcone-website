@@ -90,15 +90,9 @@ export type TrustedByClient = {
 //   { name: "Acme Co.", slug: "acme", src: "/logos/acme.svg" }
 // Trusted By hides itself entirely while this is empty rather than
 // rendering any placeholder — an empty strip beats a fake logo.
-export const trustedByClients: TrustedByClient[] = [
-  { name: "SERA", slug: "sera" },
-  { name: "UBR", slug: "ubr" },
-  { name: "SERAC", slug: "serac" },
-  { name: "TMG", slug: "tmg" },
-  { name: "SENSI", slug: "sensi" },
-  { name: "NILE", slug: "nile" },
-  { name: "CITY EDGE", slug: "city-edge" },
-  { name: "VOX", slug: "vox" },
-  { name: "ELSEWEDY", slug: "elsewedy" },
-  { name: "ORASCOM", slug: "orascom" },
-];
+// Emptied again — SERA/UBR/SERAC/TMG/SENSI/NILE/CITY EDGE/VOX/ELSEWEDY/
+// ORASCOM came from a design mockup, not a confirmed client list, and
+// were deliberately removed once already for exactly that reason before
+// finding their way back in. They stay out until there's an actual
+// confirmed roster — see the comment above for what to add and when.
+export const trustedByClients: TrustedByClient[] = [];
