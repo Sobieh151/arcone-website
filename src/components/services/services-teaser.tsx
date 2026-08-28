@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
+import { useCallback, useRef, useState, type CSSProperties, type PointerEvent } from "react";
+import Link from "next/link";
 import { services, type Service } from "@/content/services";
 import { capabilityIcons } from "@/components/icons/capability-icons";
 import { Reveal } from "@/components/animations/reveal";
@@ -67,20 +68,10 @@ function shortestBarRotation(targetDeg: number, currentDeg: number) {
 
 export function ServicesTeaser() {
   const reducedMotion = usePrefersReducedMotion();
-  const [isMobile, setIsMobile] = useState(false);
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
   const [markRotation, setMarkRotation] = useState(0);
   const svgRef = useRef<SVGSVGElement>(null);
   const orbitRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const query = window.matchMedia("(max-width: 767px)");
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsMobile(query.matches);
-    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    query.addEventListener("change", onChange);
-    return () => query.removeEventListener("change", onChange);
-  }, []);
 
   const activeService = services.find((s) => s.slug === activeSlug) ?? null;
 
@@ -149,15 +140,22 @@ export function ServicesTeaser() {
           </h2>
         </Reveal>
 
-        {isMobile ? (
-          <CapabilitiesList
-            activeSlug={activeSlug}
-            onToggle={(service) =>
-              setActiveSlug((current) => (current === service.slug ? null : service.slug))
-            }
-          />
-        ) : (
-          <>
+        {/* Both layouts render unconditionally now, CSS deciding which
+            paints (`md:hidden` / `hidden md:block`) — previously this
+            branched on a `useState` fed by `matchMedia` in a `useEffect`,
+            which meant the server-rendered (and first-client-paint,
+            pre-hydration) HTML always shipped the desktop orbit
+            regardless of the visitor's actual viewport, since that state
+            starts `false`. On a real mobile device that showed as a
+            flash of the wide orbit — its 124px-wide, absolutely
+            positioned nodes genuinely overflowing a narrow viewport —
+            before hydration corrected it a moment later. CSS media
+            queries apply before first paint, so there's nothing left to
+            correct. */}
+        <div className="md:hidden">
+          <CapabilitiesList />
+        </div>
+        <div className="hidden md:block">
             <div
               ref={orbitRef}
               onPointerMove={onOrbitPointerMove}
@@ -207,16 +205,16 @@ export function ServicesTeaser() {
                 const pos = nodePosition(service.angle);
                 const Icon = capabilityIcons[service.slug];
                 return (
-                  <button
+                  <Link
                     key={service.slug}
-                    type="button"
+                    href={`/services/${service.slug}`}
                     data-cursor-hover
                     aria-label={`${service.name} — ${service.microLabel}`}
                     onMouseEnter={() => focusNode(service)}
                     onFocus={() => focusNode(service)}
                     onMouseLeave={clearNode}
                     onBlur={clearNode}
-                    className="capabilities-node absolute flex w-[124px] -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center"
+                    className="capabilities-node absolute flex w-[124px] -translate-x-1/2 -translate-y-1/2 cursor-pointer flex-col items-center text-center"
                     style={
                       {
                         left: pos.left,
@@ -265,7 +263,7 @@ export function ServicesTeaser() {
                     <span className="mt-1 text-[9.5px] uppercase tracking-[0.1em] text-[#9C9892]">
                       {service.microLabel}
                     </span>
-                  </button>
+                  </Link>
                 );
               })}
             </div>
@@ -278,14 +276,19 @@ export function ServicesTeaser() {
               style={{ border: "1px solid #4A4A4A", background: "rgba(5,5,5,0.92)" }}
             >
               <p className="font-heading text-[12.5px] font-bold uppercase text-paper">
-                {activeService ? activeService.name : "Explore a capability"}
+                {activeService ? (
+                  <>
+                    {activeService.name} <span aria-hidden="true">↗</span>
+                  </>
+                ) : (
+                  "Explore a capability"
+                )}
               </p>
               <p className="mt-1 text-[11.5px]" style={{ color: "#A8A49E" }}>
                 {activeService ? activeService.description : "Hover any capability above"}
               </p>
             </div>
-          </>
-        )}
+        </div>
       </div>
     </section>
   );
@@ -293,41 +296,30 @@ export function ServicesTeaser() {
 
 /**
  * <768px: the orbit's radial layout doesn't work at narrow widths, so
- * this replaces it entirely — a plain vertical list, tap a row to expand
- * its description inline. No rotation, no parallax, nothing per-frame;
- * `activeSlug` (shared with the orbit's hover/focus state, just repurposed
- * as a tap-toggle here) is the only state involved.
+ * this replaces it entirely — a plain vertical list, each row a real
+ * link to its own /services/[slug] page (same destination the orbit
+ * nodes link to). No rotation, no parallax, nothing per-frame, and no
+ * expand-in-place state any more — tapping a row navigates immediately
+ * rather than revealing the description inline, matching the desktop
+ * click behaviour.
  */
-function CapabilitiesList({
-  activeSlug,
-  onToggle,
-}: {
-  activeSlug: string | null;
-  onToggle: (service: Service) => void;
-}) {
+function CapabilitiesList() {
   return (
     <ul className="mt-[22px] divide-y divide-line border-t border-line">
       {services.map((service) => {
-        const isOpen = service.slug === activeSlug;
         const Icon = capabilityIcons[service.slug];
         return (
           <li key={service.slug}>
-            <button
-              type="button"
+            <Link
+              href={`/services/${service.slug}`}
               data-cursor-hover
-              aria-expanded={isOpen}
-              onClick={() => onToggle(service)}
               className="flex w-full items-center gap-4 py-4 text-left"
             >
               <span
                 className="grid h-12 w-12 flex-none place-items-center rounded-full border"
                 style={{ borderColor: "rgba(255,90,26,0.6)", background: "rgba(5,5,5,0.96)" }}
               >
-                <Icon
-                  aria-hidden="true"
-                  className="h-[21px] w-[21px] transition-colors duration-500"
-                  style={{ color: isOpen ? "var(--arc)" : "var(--mute)" }}
-                />
+                <Icon aria-hidden="true" className="h-[21px] w-[21px]" style={{ color: "var(--mute)" }} />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[12.5px] font-bold uppercase tracking-[-0.015em] text-paper">
@@ -337,12 +329,7 @@ function CapabilitiesList({
                   {service.microLabel}
                 </span>
               </span>
-            </button>
-            {isOpen && (
-              <p className="pb-4 pl-16 pr-2 text-[11.5px]" style={{ color: "#A8A49E" }}>
-                {service.description}
-              </p>
-            )}
+            </Link>
           </li>
         );
       })}
