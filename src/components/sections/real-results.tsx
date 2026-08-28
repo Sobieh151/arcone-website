@@ -108,10 +108,10 @@ export function RealResults() {
           <Reveal>
             <div>
               <span className="block text-xs uppercase tracking-[0.2em] text-[#FF7A2E]">
-                Performance
+                Results
               </span>
               <h2 className="mt-2 font-heading text-[32px] font-extrabold uppercase leading-none tracking-[-0.04em] text-paper">
-                Real Results
+                Look at the numbers.
               </h2>
             </div>
           </Reveal>

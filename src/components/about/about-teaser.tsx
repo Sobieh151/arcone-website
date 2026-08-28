@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import { Reveal } from "@/components/animations/reveal";
 import { aboutTeaser } from "@/content/home";
 
@@ -45,30 +43,11 @@ export function AboutTeaser() {
             {aboutTeaser.title}
           </h2>
 
-          <p className="mt-[14px] text-[15px] leading-[1.6] text-paper/85">
-            {aboutTeaser.statement.map((line) => (
-              <span key={line} className="block">
-                {line}
-              </span>
-            ))}
-          </p>
+          <p className="mt-[14px] text-[15px] leading-[1.6] text-paper/85">{aboutTeaser.statement}</p>
 
-          <ul className="mt-[18px] list-none text-[13px] leading-[2] text-paper/72">
-            {aboutTeaser.bullets.map((bullet) => (
-              <li key={bullet} className="about-bullet flex items-center">
-                {bullet}
-              </li>
-            ))}
-          </ul>
-
-          <Link
-            href={aboutTeaser.cta.href}
-            data-cursor-hover
-            className="mt-[22px] inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.14em] text-mute transition-colors hover:text-paper"
-          >
-            {aboutTeaser.cta.label}
-            <ArrowUpRight size={14} />
-          </Link>
+          <span className="mt-[18px] block text-[11px] uppercase tracking-[0.18em] text-mute">
+            {aboutTeaser.location}
+          </span>
         </Reveal>
       </div>
     </section>

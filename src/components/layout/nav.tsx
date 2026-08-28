@@ -157,10 +157,11 @@ export function Nav() {
               </span>
             </Link>
 
-            {/* Links + their two flanking dividers collapse together below
-                640px — there's no room for a whole link row at that width,
-                and everything they'd offer already lives in the
-                full-screen panel the menu button opens. */}
+            {/* Links (+ their one flanking divider) collapse below 640px —
+                there's no room for a whole link row at that width, so the
+                menu button below (hidden entirely above that breakpoint —
+                it would just duplicate these same three links) takes
+                over as the only way to reach them. */}
             <div className="hidden items-center sm:flex">
               <span aria-hidden="true" className="nav-divider" />
               <ul className="flex items-center gap-[22px]">
@@ -180,7 +181,6 @@ export function Nav() {
                   );
                 })}
               </ul>
-              <span aria-hidden="true" className="nav-divider" />
             </div>
 
             <button

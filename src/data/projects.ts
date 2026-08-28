@@ -2,9 +2,13 @@
 // object in this array — every list, card, and case-study page template
 // reads from here.
 //
-// TODO: these four are placeholder case studies (fictional clients/
-// numbers) standing in until real project data is ready. Swap the
-// content, keep the shape.
+// Mixed roster right now: north-atlas/fielder/marrow/harbor-co are
+// fictional case studies (fake clients AND fake numbers) standing in
+// until real project data exists; sensi/nawel-space are real,
+// confirmed clients whose case-study copy is still [[ placeholder ]]
+// pending the actual write-up. Don't invent specifics for the real
+// ones the way the fictional entries get to — swap in the real
+// challenge/strategy/execution/results, don't author new fake ones.
 
 export type Project = {
   slug: string;
@@ -48,6 +52,44 @@ export const projects: Project[] = [
     color: "#E85002",
   },
   {
+    // Real client — case-study copy below is still placeholder pending
+    // the actual write-up; don't invent numbers or specifics for a real
+    // name the way the fictional entries below get to.
+    slug: "sensi",
+    name: "Sensi",
+    category: "Campaign",
+    industry: "[[ Sensi — industry ]]",
+    year: "2025",
+    summary: "[[ Sensi — one-sentence summary ]]",
+    services: ["[[ Service ]]", "[[ Service ]]"],
+    challenge: "[[ Sensi — challenge ]]",
+    strategy: "[[ Sensi — strategy ]]",
+    execution: "[[ Sensi — execution ]]",
+    results: [
+      { label: "[[ Result ]]", value: "[[ — ]]" },
+      { label: "[[ Result ]]", value: "[[ — ]]" },
+    ],
+    color: "#D14D02",
+  },
+  {
+    // Real client — same placeholder-copy note as Sensi above.
+    slug: "nawel-space",
+    name: "Nawel Space",
+    category: "Digital",
+    industry: "[[ Nawel Space — industry ]]",
+    year: "2025",
+    summary: "[[ Nawel Space — one-sentence summary ]]",
+    services: ["[[ Service ]]", "[[ Service ]]"],
+    challenge: "[[ Nawel Space — challenge ]]",
+    strategy: "[[ Nawel Space — strategy ]]",
+    execution: "[[ Nawel Space — execution ]]",
+    results: [
+      { label: "[[ Result ]]", value: "[[ — ]]" },
+      { label: "[[ Result ]]", value: "[[ — ]]" },
+    ],
+    color: "#B33A02",
+  },
+  {
     slug: "fielder",
     name: "Fielder",
     category: "Web & App",
@@ -71,7 +113,11 @@ export const projects: Project[] = [
   {
     slug: "marrow",
     name: "Marrow",
-    category: "Media & Activations",
+    // Was "Media & Activations" — that service was renamed to
+    // "Activations" (content/services.ts); kept in sync so this still
+    // matches a real filter button on /work instead of silently falling
+    // out of every category but "All".
+    category: "Activations",
     industry: "Nutrition & Wellness",
     year: "2024",
     summary: "Launching a nutrition brand into a category built on noise.",

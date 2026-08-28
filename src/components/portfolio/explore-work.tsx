@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, ArrowUpRight, MousePointer2 } from "lucide-react";
 import { Reveal } from "@/components/animations/reveal";
-import { MaskReveal } from "@/components/animations/mask-reveal";
 import { Button } from "@/components/buttons/button";
 import { IconButton } from "@/components/buttons/icon-button";
 import { Magnetic } from "@/components/buttons/magnetic";
@@ -22,20 +21,21 @@ function placeholderArt(color: string) {
 
 type CarouselProject = { slug: string; title: string; category: string; image: string; href: string };
 
-// Homepage teaser list — placeholders pending the real, ordered client
-// roster (the whole portfolio is fictional case studies for now; see the
-// TODO at the top of data/projects.ts). `image` holds a generated
-// placeholder gradient standing in for real photography — swap for a
-// `background-image: url(...)` once real photos exist, nothing else here
-// needs to change. Every slug below matches a real entry in
-// data/projects.ts, so every card opens the real project modal on click
-// (see `activate`) — `href` only ever serves as a fallback if a slug here
-// and in data/projects.ts ever drift apart.
+// Homepage teaser list — the brief's four slots, in order. Three are
+// real, confirmed clients (see the roster note at the top of
+// data/projects.ts); the fourth doesn't have a confirmed project yet,
+// so it stays exactly what it is — a placeholder, not a name I made up
+// — and its slug deliberately doesn't match anything in
+// data/projects.ts, so `activate` below falls through to its plain
+// `href` (the /work archive) instead of opening a fake case study.
+// `image` holds a generated placeholder gradient standing in for real
+// photography — swap for a `background-image: url(...)` once real
+// photos exist, nothing else here needs to change.
 const CAROUSEL_PROJECTS: CarouselProject[] = [
   { slug: "north-atlas", title: "North Atlas", category: "Branding", image: placeholderArt("#E85002"), href: "/work" },
-  { slug: "fielder", title: "Fielder", category: "Web & App", image: placeholderArt("#FF6001"), href: "/work" },
-  { slug: "marrow", title: "Marrow", category: "Media & Activations", image: placeholderArt("#C13001"), href: "/work" },
-  { slug: "harbor-co", title: "Harbor & Co.", category: "Digital Marketing", image: placeholderArt("#9C3F0B"), href: "/work" },
+  { slug: "sensi", title: "Sensi", category: "Campaign", image: placeholderArt("#D14D02"), href: "/work" },
+  { slug: "nawel-space", title: "Nawel Space", category: "Digital", image: placeholderArt("#B33A02"), href: "/work" },
+  { slug: "project-4-placeholder", title: "[[ Project ]]", category: "Campaign", image: placeholderArt("#8A2E02"), href: "/work" },
 ];
 
 // Visual state — just active / inactive, a flatter binary tier than a
@@ -75,7 +75,7 @@ const WORK_HINT_AUTO_DISMISS_MS = 7000;
 // point. Two stops fit comfortably inside the auto-dismiss window with
 // room to actually register each one.
 const WORK_HINT_STOP_MS = 2600;
-// Percentage positions within the track, tuned to the current (460px)
+// Percentage positions within the track, tuned to the current (560px)
 // card width/spacing — the immediate right-hand neighbour, then the one
 // past it, so the hint visibly "walks" toward the edge of the row.
 const WORK_HINT_STOPS = [
@@ -247,7 +247,7 @@ export function ExploreWork() {
   const useNativeScroll = reducedMotion || isMobile;
 
   return (
-    <section className="explore-work-row relative overflow-hidden border-t border-line bg-ink py-16">
+    <section className="explore-work-row relative overflow-hidden border-t border-line bg-ink pb-6 pt-16">
       <div className="mx-auto max-w-7xl px-6 sm:px-10">
         <div className="grid grid-cols-1 items-center gap-6 lg:grid-cols-[250px_1fr]">
           {/* Left column — dims when the carousel is being hovered/focused
@@ -256,18 +256,13 @@ export function ExploreWork() {
               and the other recedes rather than competing with it. */}
           <div className="explore-text-block">
             <Reveal>
-              <span className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-arc">
-                Explore Our Work
-                <ArrowUpRight size={14} />
+              <span className="block text-xs uppercase tracking-[0.2em] text-arc">
+                Selected Work
               </span>
+              <h2 className="mt-2 font-heading text-[32px] font-extrabold uppercase leading-none tracking-[-0.04em] text-paper">
+                Good work gets noticed.
+              </h2>
             </Reveal>
-            <MaskReveal
-              as="p"
-              delay={0.06}
-              className="mt-5 text-balance text-base leading-relaxed text-paper/65"
-            >
-              A selection of identities, campaigns and digital experiences built to move brands forward.
-            </MaskReveal>
           </div>
 
           {/* Carousel — the hero of this section, so it gets almost all
@@ -308,10 +303,10 @@ export function ExploreWork() {
                     onPointerCancel={onPointerCancel}
                     onKeyDown={onKeyDown}
                     className={cn(
-                      "explore-track relative h-[300px] w-full min-w-0 touch-pan-y select-none overflow-hidden",
+                      "explore-track relative h-[360px] w-full min-w-0 touch-pan-y select-none overflow-hidden",
                       isDragging && "is-dragging"
                     )}
-                    style={{ "--card-spacing": "400px" } as CSSProperties}
+                    style={{ "--card-spacing": "480px" } as CSSProperties}
                   >
                     {CAROUSEL_PROJECTS.map((entry, index) => {
                       const distance = circularDistance(index, activeIndex, length);
@@ -326,7 +321,7 @@ export function ExploreWork() {
                           aria-current={isActive ? "true" : undefined}
                           tabIndex={Math.abs(distance) > 1 ? -1 : 0}
                           onClick={(e) => activate(index, e.currentTarget)}
-                          className="explore-card explore-card--desktop group w-[460px] overflow-hidden rounded-[16px] border text-left"
+                          className="explore-card explore-card--desktop group w-[560px] overflow-hidden rounded-[16px] border text-left"
                           style={
                             {
                               "--card-distance": distance,
@@ -341,13 +336,18 @@ export function ExploreWork() {
                         >
                           <div className="relative aspect-[16/9] w-full">
                             <div className="absolute inset-0" style={{ background: entry.image }} />
-                            {/* Darker/higher-contrast than before — the
-                                category line at via-black/5 was nearly
-                                unreadable against a light gradient this
-                                close to the card's own edge; it read as
-                                "clipped" even though it was fully
-                                on-screen. */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                            {/* Explicit 3-stop gradient, not Tailwind's
+                                from/via/to utilities — those default the
+                                via-stop to 50%, which produced a visible
+                                hard seam partway up the card instead of a
+                                smooth fade. */}
+                            <div
+                              className="absolute inset-0"
+                              style={{
+                                background:
+                                  "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.55) 28%, transparent 65%)",
+                              }}
+                            />
                             {/* p-4 = 16px on every side, including the
                                 bottom clearance below the category line. */}
                             <div className="absolute inset-x-0 bottom-0 p-4">
@@ -420,25 +420,6 @@ export function ExploreWork() {
                 </div>
               </>
             )}
-
-            {/* The hero's light trail, picked back up: same stroke, same
-                opacity family, echoing down the page as the floor the
-                work carousel sits on. Purely decorative, static. */}
-            <svg
-              viewBox="0 0 100 20"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-              className="pointer-events-none absolute -bottom-10 left-0 h-16 w-full"
-            >
-              <path
-                d="M -5,4 C 20,18 45,-4 70,10 S 95,18 105,6"
-                fill="none"
-                stroke="var(--arc)"
-                strokeOpacity="0.4"
-                strokeWidth="1.5"
-                vectorEffect="non-scaling-stroke"
-              />
-            </svg>
           </div>
         </div>
 
@@ -537,7 +518,12 @@ function MobileRow({
           >
             <div className="relative aspect-[16/9] w-full">
               <div className="absolute inset-0" style={{ background: entry.image }} />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.55) 28%, transparent 65%)",
+                }}
+              />
               <div className="absolute inset-x-0 bottom-0 p-4">
                 <h3 className="font-heading text-[16px] font-bold text-paper">{entry.title}</h3>
                 {(isActive || reducedMotion) && (

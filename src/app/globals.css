@@ -88,7 +88,15 @@
   --color-arc: var(--arc);
   --color-arc-bright: var(--arc-bright);
 
-  --font-sans: var(--font-inter);
+  /* Helvetica Neue is a system/licensed face, not a webfont — there's
+     nothing to load, this is a plain font-stack. Archivo (a loaded
+     webfont, --font-archivo) stays for display headlines: it's a
+     deliberately higher-contrast, taller-x-height grotesque built for
+     the site's oversized, tightly-tracked headline treatment (see
+     hero.tsx's clamp(2.75rem,9vw,5.5rem) h1) — Helvetica Neue's more
+     neutral, restrained character reads comparatively flat at that
+     size and weight, so it stays the body/UI face only. */
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-heading: var(--font-archivo);
 
   --animate-fade-up: fade-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -127,7 +135,7 @@ html {
 body {
   background: var(--color-bg);
   color: var(--color-white);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -454,6 +462,19 @@ html.lenis body {
   opacity: 1;
 }
 
+/* Desktop has the same three links visible in the pill already — the
+   menu button would just duplicate them, so it only exists below 640px.
+   A media query here, not a `sm:hidden` Tailwind class on the element:
+   this plain CSS block sits in a higher-priority layer than Tailwind's
+   utilities in this project, so a utility class can never win against
+   the `display: grid` above regardless of viewport — this has to beat
+   it within the same plain-CSS layer instead. */
+@media (min-width: 640px) {
+  .nav-menu-btn {
+    display: none;
+  }
+}
+
 .nav-mark,
 .nav-link,
 .nav-menu-btn {
@@ -697,7 +718,7 @@ textarea:focus-visible,
   top: 50%;
   transform:
     translate(-50%, -50%)
-    translateX(calc(var(--card-distance, 0) * var(--card-spacing, 455px) + var(--drag-offset, 0px)))
+    translateX(calc(var(--card-distance, 0) * var(--card-spacing, 480px) + var(--drag-offset, 0px)))
     scale(var(--card-scale, 1));
   z-index: var(--card-z, 1);
 }

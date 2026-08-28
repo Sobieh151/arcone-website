@@ -5,6 +5,10 @@
 // description/deliverable below is a [[ placeholder ]] for the copy pass —
 // see the project plan for the placeholder-copy rule.
 //
+// Array order here is display order (services-list.tsx, the mobile
+// CapabilitiesList) — it doesn't affect the orbit, which positions each
+// node independently via its own `angle` regardless of array order.
+//
 // `angle` and `microLabel` feed the homepage orbit layout
 // (components/services/services-teaser.tsx): `angle` places the node on
 // the orbit ellipse (0deg = right, sweeping clockwise since SVG's y-axis
@@ -27,6 +31,26 @@ export type Service = {
 };
 
 export const services: Service[] = [
+  {
+    slug: "branding",
+    name: "Branding",
+    shortName: "Branding",
+    description: "[[ Branding — one-paragraph description ]]",
+    positioning: "[[ Branding — one-line positioning statement ]]",
+    deliverables: [
+      "[[ Deliverable ]]",
+      "[[ Deliverable ]]",
+      "[[ Deliverable ]]",
+    ],
+    process: [
+      "[[ Branding — process step 1 ]]",
+      "[[ Branding — process step 2 ]]",
+      "[[ Branding — process step 3 ]]",
+      "[[ Branding — process step 4 ]]",
+    ],
+    angle: 306,
+    microLabel: "Identity / Systems",
+  },
   {
     slug: "digital-marketing",
     name: "Digital Marketing",
@@ -68,24 +92,29 @@ export const services: Service[] = [
     microLabel: "Film / Content",
   },
   {
-    slug: "branding",
-    name: "Branding",
-    shortName: "Branding",
-    description: "[[ Branding — one-paragraph description ]]",
-    positioning: "[[ Branding — one-line positioning statement ]]",
+    // Slug kept as media-activations (not renamed to match the new
+    // display name) — it's already built as a static route
+    // (/services/media-activations) and linked from Trusted By-adjacent
+    // places; renaming it would break those URLs for a display-only
+    // change. Only `name`/`shortName` change.
+    slug: "media-activations",
+    name: "Activations",
+    shortName: "Activations",
+    description: "[[ Activations — one-paragraph description ]]",
+    positioning: "[[ Activations — one-line positioning statement ]]",
     deliverables: [
       "[[ Deliverable ]]",
       "[[ Deliverable ]]",
       "[[ Deliverable ]]",
     ],
     process: [
-      "[[ Branding — process step 1 ]]",
-      "[[ Branding — process step 2 ]]",
-      "[[ Branding — process step 3 ]]",
-      "[[ Branding — process step 4 ]]",
+      "[[ Activations — process step 1 ]]",
+      "[[ Activations — process step 2 ]]",
+      "[[ Activations — process step 3 ]]",
+      "[[ Activations — process step 4 ]]",
     ],
-    angle: 306,
-    microLabel: "Identity / Systems",
+    angle: 18,
+    microLabel: "Experiences",
   },
   {
     slug: "web-app",
@@ -106,25 +135,5 @@ export const services: Service[] = [
     ],
     angle: 90,
     microLabel: "Digital Experience",
-  },
-  {
-    slug: "media-activations",
-    name: "Media & Activations",
-    shortName: "Media & Activations",
-    description: "[[ Media & Activations — one-paragraph description ]]",
-    positioning: "[[ Media & Activations — one-line positioning statement ]]",
-    deliverables: [
-      "[[ Deliverable ]]",
-      "[[ Deliverable ]]",
-      "[[ Deliverable ]]",
-    ],
-    process: [
-      "[[ Media & Activations — process step 1 ]]",
-      "[[ Media & Activations — process step 2 ]]",
-      "[[ Media & Activations — process step 3 ]]",
-      "[[ Media & Activations — process step 4 ]]",
-    ],
-    angle: 18,
-    microLabel: "Experiences",
   },
 ];

@@ -201,20 +201,10 @@ export function Hero() {
 
 function CtaButtons() {
   return (
-    <>
-      <Magnetic className="w-full sm:w-auto">
-        <Button href={hero.primaryCta.href} icon={arrow} className="w-full sm:w-auto">
-          {hero.primaryCta.label}
-        </Button>
-      </Magnetic>
-      <Magnetic className="w-full sm:w-auto">
-        {/* glass, not ghost — this CTA sits on the hero's own scene
-            (background.tsx / the ARC mark), where a plain outline would
-            fight the imagery behind it. */}
-        <Button href={hero.secondaryCta.href} variant="glass" icon={arrow} className="w-full sm:w-auto">
-          {hero.secondaryCta.label}
-        </Button>
-      </Magnetic>
-    </>
+    <Magnetic className="w-full sm:w-auto">
+      <Button href={hero.primaryCta.href} icon={arrow} className="w-full sm:w-auto">
+        {hero.primaryCta.label}
+      </Button>
+    </Magnetic>
   );
 }

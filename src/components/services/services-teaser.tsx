@@ -73,8 +73,6 @@ export function ServicesTeaser() {
   const svgRef = useRef<SVGSVGElement>(null);
   const orbitRef = useRef<HTMLDivElement>(null);
 
-  const activeService = services.find((s) => s.slug === activeSlug) ?? null;
-
   // Hover AND focus both funnel through this one pair — a mouse click
   // firing onFocus too just re-applies the same state onMouseEnter
   // already set, which is harmless, and it's what gets keyboard users
@@ -133,10 +131,10 @@ export function ServicesTeaser() {
       <div className="relative mx-auto max-w-7xl">
         <Reveal>
           <span className="block text-xs uppercase tracking-[0.2em] text-[#FF7A2E]">
-            Capabilities
+            What We Do
           </span>
           <h2 className="mt-2 font-heading text-[38px] font-extrabold uppercase leading-none tracking-[-0.05em] text-paper">
-            What We Do
+            Pick your move.
           </h2>
         </Reveal>
 
@@ -266,27 +264,6 @@ export function ServicesTeaser() {
                   </Link>
                 );
               })}
-            </div>
-
-            {/* Deliberately a normal block below the orbit container, not
-                absolutely positioned inside it — inside, it collides with
-                the bottom-centre node at narrow widths. */}
-            <div
-              className="mx-auto mt-[22px] max-w-[520px] rounded-full px-[26px] py-[14px] text-center"
-              style={{ border: "1px solid #4A4A4A", background: "rgba(5,5,5,0.92)" }}
-            >
-              <p className="font-heading text-[12.5px] font-bold uppercase text-paper">
-                {activeService ? (
-                  <>
-                    {activeService.name} <span aria-hidden="true">↗</span>
-                  </>
-                ) : (
-                  "Explore a capability"
-                )}
-              </p>
-              <p className="mt-1 text-[11.5px]" style={{ color: "#A8A49E" }}>
-                {activeService ? activeService.description : "Hover any capability above"}
-              </p>
             </div>
         </div>
       </div>

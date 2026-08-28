@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, Inter } from "next/font/google";
+import { Archivo } from "next/font/google";
 import "./globals.css";
 import { MotionConfig } from "framer-motion";
 import { AppReadyProvider } from "@/components/providers/app-ready";
@@ -12,12 +12,9 @@ import { siteConfig } from "@/content/seo";
 import { socialLinks } from "@/content/navigation";
 import { ArcMarkSprite } from "@/components/icons/arc-mark";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
-
+// No Inter any more — the body/UI face is now Helvetica Neue, a system
+// font (see --font-sans in globals.css), so there's nothing to load for
+// it. Archivo stays for display headlines only.
 const archivo = Archivo({
   variable: "--font-archivo",
   subsets: ["latin"],
@@ -74,7 +71,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${inter.variable} ${archivo.variable} h-full`}>
+    <html lang="en" className={`${archivo.variable} h-full`}>
       <body className="flex min-h-full flex-col bg-bg antialiased">
         {/* Defines #arc-mark once so every <use href="#arc-mark"> on the
             page (nav, hero) resolves — see components/icons/arc-mark.tsx. */}

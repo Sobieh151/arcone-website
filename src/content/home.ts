@@ -10,48 +10,35 @@ import { primaryCta } from "@/content/shared";
 
 export type HeroHeadlineLine = { text: string; accent?: string };
 
-// Hero copy (components/hero/hero.tsx). Eyebrow, headline, subhead and CTA
-// labels are the brief's literal, final copy — not placeholders like the
-// rest of the site's page-shell prose. `accent` on a headline line renders
-// in --arc instead of --paper (see the hero spec: "ARC." is the one word
-// that isn't --paper).
+// Hero copy (components/hero/hero.tsx). One CTA only — no secondaryCta
+// any more, per the site's "three CTAs, total, sitewide" rule (this one
+// is "Start a Project"). `accent` on a headline line renders in --arc
+// instead of --paper (see the hero spec: one word per headline gets it,
+// never the whole line).
 export const hero = {
   eyebrow: "CREATIVE AGENCY",
   headline: [
-    { text: "WHERE" },
+    { text: "WE MAKE" },
     { text: "BRANDS" },
-    { text: "FIND THEIR" },
-    { text: "FIRST ", accent: "ARC." },
+    { text: "HARD TO ", accent: "FORGET." },
   ] satisfies HeroHeadlineLine[],
-  subhead:
-    "We build brands, campaigns and digital experiences that create impact — and drive real results.",
+  subhead: "We build brands, campaigns and digital work that get attention, drive growth and stick.",
   // primaryCta already reads "Start a Project" / "/start" from shared.ts.
   primaryCta,
-  secondaryCta: { label: "Explore Our Work", href: "/work" },
 };
 
 export type AboutTeaser = {
   kicker: string;
   title: string;
-  // Two lines, hard break between them — see components/about/about-teaser.tsx.
-  statement: [string, string];
-  bullets: string[];
-  cta: { label: string; href: string };
+  statement: string;
+  location: string;
 };
 
 export const aboutTeaser: AboutTeaser = {
-  kicker: "STUDIO",
-  title: "About ARCone",
-  statement: ["Strategy meets creativity.", "Creativity meets technology."],
-  bullets: [
-    // The blueprint says 2024 and an earlier draft said 2025. Confirm the
-    // real founding year before launch — a wrong date on an About page is
-    // the kind of detail a prospective client notices.
-    "Founded [[ YEAR ]], Cairo",
-    "AI & technology integration",
-    "Egypt → KSA → MENA",
-  ],
-  cta: { label: "Our Story", href: "/about" },
+  kicker: "ARCone",
+  title: "Big Ideas. Real Movement.",
+  statement: "We turn strategy into brands people notice, talk about and remember.",
+  location: "Cairo → MENA",
 };
 
 export type ResultStat = {
@@ -74,10 +61,10 @@ export type ResultStat = {
 // the same frame, but the shortest duration (rightmost, Campaigns) settles
 // first and the longest (leftmost, ROAS) settles last.
 export const resultsStats: ResultStat[] = [
-  { value: 240, decimals: 0, suffix: "%", label: "Return on Ad Spend", durationMs: 2100 },
-  { value: 12.4, decimals: 1, suffix: "M", label: "People Reached", durationMs: 1700 },
+  { value: 240, decimals: 0, suffix: "%", label: "ROAS", durationMs: 2100 },
+  { value: 12.4, decimals: 1, suffix: "M", label: "Reached", durationMs: 1700 },
   { value: 68, decimals: 0, suffix: "%", label: "More Qualified Leads", durationMs: 1300 },
-  { value: 120, decimals: 0, suffix: "+", label: "Campaigns Delivered", durationMs: 900 },
+  { value: 120, decimals: 0, suffix: "+", label: "Campaigns", durationMs: 900 },
 ];
 
 

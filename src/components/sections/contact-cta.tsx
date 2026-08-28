@@ -115,18 +115,17 @@ export function ContactCta() {
             ))}
           </h2>
 
-          <div className="mt-[22px] flex flex-wrap items-center gap-[11px]">
+          <p className="mt-[14px] text-lg uppercase tracking-[0.02em] text-paper/70">{contactCta.supporting}</p>
+
+          {/* One CTA — WhatsApp lives in the footer instead now (see
+              content/shared.ts), so it doesn't compete with this one. */}
+          <div className="mt-[22px]">
             <Magnetic strength={0.3} className="inline-flex">
               {/* cta-primary-trigger: unrelated to the button's own
                   styling — it's what .contact-cta:has(...) below keys
                   off of to glow the arc behind this button on hover. */}
               <Button href={contactCta.primary.href} icon={arrow} className="cta-primary-trigger">
                 {contactCta.primary.label}
-              </Button>
-            </Magnetic>
-            <Magnetic strength={0.3} className="inline-flex">
-              <Button href={contactCta.secondary.href} variant="ghost" icon={arrow}>
-                {contactCta.secondary.label}
               </Button>
             </Magnetic>
           </div>
