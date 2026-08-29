@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { PageHeader } from "@/components/layout/page-header";
+import { AboutHero } from "@/components/about/about-hero";
 import { Reveal } from "@/components/animations/reveal";
 import { Values } from "@/components/about/values";
 import { Stats } from "@/components/about/stats";
 import { ContactCta } from "@/components/sections/contact-cta";
-import { aboutHeader, statement } from "@/content/about";
+import { statement } from "@/content/about";
 
 export const metadata: Metadata = {
   title: "About",
@@ -15,9 +15,9 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <>
-      <PageHeader eyebrow={aboutHeader.eyebrow} title={aboutHeader.title} />
+      <AboutHero />
 
-      <section className="mx-auto max-w-4xl px-6 pb-28 sm:px-10">
+      <section className="mx-auto max-w-4xl px-6 pb-28 pt-16 sm:px-10">
         {statement.map((paragraph, i) => (
           <Reveal key={paragraph} delay={i * 0.1}>
             <p className="mt-8 text-balance text-2xl leading-relaxed text-gray-light first:mt-0 sm:text-3xl">
